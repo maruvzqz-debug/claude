@@ -3,12 +3,14 @@
 // renderiza fotogramas con p creciente y luego congela el último.
 import { Logo, Confotur } from "./common.jsx";
 import { Icon, AMENIDADES } from "../components/Icons.jsx";
-import { fmtMoney, fmtNum, splitAcento, splitScript } from "../lib/format.js";
+import { fmtMoney, fmtNum, splitAcento, splitScript, SAFE } from "../lib/format.js";
 import { dimsOf } from "./Ficha.jsx";
 import { centroid } from "./Lote.jsx";
 
 const W = 1080, H = 1920;
-const SAFE_BOTTOM = 400; // botones y caption de Instagram
+const SV = SAFE.vertical;
+const SAFE_BOTTOM = SV.bottom; // caption, usuario, audio (IG Reels + TikTok)
+const L0 = SV.left + 4, R0 = SV.right + 10; // márgenes de texto
 const clamp = (x) => Math.max(0, Math.min(1, x));
 const ease = (x) => 1 - Math.pow(1 - clamp(x), 3);
 // entrada escalonada: elemento i arranca en i*step
@@ -21,8 +23,8 @@ function Chrome({ d, dark = true }) {
   return (
     <>
       <div style={{ position: "absolute", inset: "0 0 auto 0", height: 420, background: "linear-gradient(to bottom, rgba(0,0,0,.5), rgba(0,0,0,0))" }} />
-      <div style={{ position: "absolute", left: 64, top: 150 }}><Logo variant={dark ? "blanco" : "rojo"} height={52} /></div>
-      <div style={{ position: "absolute", right: 64, top: 130 }}><Confotur show={d.confotur} size={140} /></div>
+      <div style={{ position: "absolute", left: L0, top: SV.top + 10 }}><Logo variant={dark ? "blanco" : "rojo"} height={52} /></div>
+      <div style={{ position: "absolute", right: R0, top: SV.top }}><Confotur show={d.confotur} size={130} /></div>
     </>
   );
 }
@@ -36,7 +38,7 @@ function Gancho({ d, p }) {
   return (
     <>
       <Chrome d={d} /><Shade h={1300} />
-      <div style={{ position: "absolute", left: 64, right: 150, bottom: SAFE_BOTTOM + 60, color: "#fff" }}>
+      <div style={{ position: "absolute", left: L0, right: R0, bottom: SAFE_BOTTOM + 30, color: "#fff" }}>
         <div style={{ ...enter(p, 0), display: "inline-block", background: "var(--kx-red)", font: "800 28px var(--font-head)", letterSpacing: ".2em", textTransform: "uppercase", padding: "14px 26px" }}>{tag}</div>
         <h1 style={{ ...enter(p, 1), font: "900 108px/1.0 var(--font-head)", letterSpacing: "-0.015em", marginTop: 34, textShadow: "0 4px 30px rgba(0,0,0,.35)" }}>
           {parts.map((x, i) => <span key={i} className={x.s ? "script" : ""} style={x.a || x.s ? { color: "var(--kx-gold)", fontSize: x.s ? "1.12em" : undefined, fontWeight: x.s ? 400 : undefined } : undefined}>{x.t}</span>)}
@@ -55,7 +57,7 @@ function Medidas({ d, p }) {
   return (
     <>
       <Chrome d={d} /><Shade h={900} />
-      <div style={{ position: "absolute", left: 64, right: 150, bottom: SAFE_BOTTOM + 40 }}>
+      <div style={{ position: "absolute", left: L0, right: R0, bottom: SAFE_BOTTOM + 20 }}>
         <div style={{ ...enter(p, 0), color: "#fff", font: "800 26px var(--font-head)", letterSpacing: ".26em", marginBottom: 18, textShadow: "0 2px 12px rgba(0,0,0,.6)" }}>LA PROPIEDAD</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           {dims.map((x, i) => (
@@ -76,7 +78,7 @@ function Amenidades({ d, p }) {
   return (
     <>
       <Chrome d={d} /><Shade h={1000} />
-      <div style={{ position: "absolute", left: 64, right: 150, bottom: SAFE_BOTTOM + 40 }}>
+      <div style={{ position: "absolute", left: L0, right: R0, bottom: SAFE_BOTTOM + 20 }}>
         <div style={{ ...enter(p, 0), color: "#fff", font: "800 26px var(--font-head)", letterSpacing: ".26em", marginBottom: 18, textShadow: "0 2px 12px rgba(0,0,0,.6)" }}>AMENIDADES</div>
         <div style={{ ...enter(p, 1), background: "var(--kx-cream)", borderRadius: 24, padding: "30px 24px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "28px 10px", boxShadow: "0 12px 30px rgba(0,0,0,.25)" }}>
           {am.map((a, i) => (
@@ -100,7 +102,7 @@ function Frase({ d, p }) {
   return (
     <>
       <Chrome d={d} /><Shade h={900} />
-      <div style={{ position: "absolute", left: 64, right: 150, bottom: SAFE_BOTTOM + 80, color: "#fff" }}>
+      <div style={{ position: "absolute", left: L0, right: R0, bottom: SAFE_BOTTOM + 50, color: "#fff" }}>
         <div style={{ ...enter(p, 0), width: 90, height: 6, background: "var(--kx-gold)", marginBottom: 36 }} />
         <div className="script" style={{ ...enter(p, 1), fontSize: 104, lineHeight: 1.05, textShadow: "0 4px 26px rgba(0,0,0,.45)" }}>{d.frase_script}</div>
       </div>
@@ -114,7 +116,7 @@ function Precio({ d, p }) {
   return (
     <>
       <Chrome d={d} /><Shade h={1000} />
-      <div style={{ position: "absolute", left: 64, right: 150, bottom: SAFE_BOTTOM + 60 }}>
+      <div style={{ position: "absolute", left: L0, right: R0, bottom: SAFE_BOTTOM + 30 }}>
         <div style={{ ...enter(p, 0), display: "inline-block", background: "var(--kx-red)", color: "#fff", borderRadius: 26, padding: "32px 40px", borderBottom: "6px solid var(--kx-gold)", boxShadow: "0 14px 34px rgba(0,0,0,.3)" }}>
           <small style={{ display: "block", font: "700 22px var(--font-head)", letterSpacing: ".24em", textTransform: "uppercase" }}>{d.precio_desde ? "Desde" : d.operacion === "alquiler" ? "Precio de alquiler" : "Precio de venta"}</small>
           <b style={{ display: "block", font: "900 104px/1 var(--font-head)", marginTop: 10, whiteSpace: "nowrap" }}>{precio}</b>
@@ -132,6 +134,8 @@ function Revelado({ d, p }) {
   const pts = (L.poligono_reel || L.poligono || []).filter((x) => Array.isArray(x) && x.length === 2);
   const c = centroid(pts);
   const m2 = fmtNum(d.m2_solar);
+  const xs = pts.map((q) => q[0] * W), polyW = xs.length ? Math.max(...xs) - Math.min(...xs) : W;
+  const pillFont = Math.round(Math.max(24, Math.min(46, (polyW * 0.78 - 50) / (((m2 || "") + " m²").length * 0.64))));
   const draw = ease(p / 0.45), fill = ease((p - 0.4) / 0.25), labels = ease((p - 0.55) / 0.25), pill = ease((p - 0.7) / 0.25);
   let per = 0;
   const px = pts.map(([x, y]) => [x * W, y * H]);
@@ -139,7 +143,7 @@ function Revelado({ d, p }) {
   return (
     <>
       <Chrome d={d} />
-      <div style={{ position: "absolute", left: 64, right: 230, top: 290, color: "#fff", ...enter(p, 0, 0, 0.3) }}>
+      <div style={{ position: "absolute", left: L0, right: R0 + 150, top: SV.top + 110, color: "#fff", ...enter(p, 0, 0, 0.3) }}>
         <div style={{ font: "700 26px var(--font-head)", letterSpacing: ".4em" }}>{L.etiqueta_superior || "RESIDENCIAL"}</div>
         <div style={{ font: "900 82px/1 var(--font-head)", marginTop: 8, textShadow: "0 3px 20px rgba(0,0,0,.4)" }}>{d.proyecto || d.titulo}</div>
       </div>
@@ -159,11 +163,12 @@ function Revelado({ d, p }) {
         let ang = Math.atan2((b[1] - a[1]) * H, (b[0] - a[0]) * W) * 180 / Math.PI;
         if (ang > 90) ang -= 180; if (ang < -90) ang += 180;
         const off = Math.abs(ang) > 45 ? 34 : 50;
-        const lx = Math.max(40, Math.min(W - 40, mx * W + dx / len * off)), ly = Math.max(260, Math.min(H - 300, my * H + dy / len * off));
+        const hw = Math.abs(ang) > 45 ? 24 : 80; // medio ancho de la etiqueta (girada o no)
+        const lx = Math.max(SV.left + hw, Math.min(W - SV.right - hw, mx * W + dx / len * off)), ly = Math.max(SV.top + 20, Math.min(H - SV.bottom - 20, my * H + dy / len * off));
         return <div key={i} style={{ position: "absolute", left: lx, top: ly, transform: `translate(-50%,-50%) rotate(${ang}deg)`, opacity: labels, color: "#fff", font: "800 28px var(--font-head)", background: "rgba(30,30,30,.72)", padding: "6px 14px", borderRadius: 999, whiteSpace: "nowrap" }}>{m}</div>;
       })}
       {pts.length >= 3 && m2 ? (
-        <div style={{ position: "absolute", left: c[0] * W, top: c[1] * H, transform: `translate(-50%,-50%) scale(${0.6 + 0.4 * pill})`, opacity: pill, background: "var(--kx-gold)", color: "var(--kx-ink)", font: "900 46px var(--font-head)", padding: "14px 30px", borderRadius: 999, whiteSpace: "nowrap", boxShadow: "0 8px 24px rgba(0,0,0,.35)" }}>{m2} m²</div>
+        <div style={{ position: "absolute", left: c[0] * W, top: c[1] * H, transform: `translate(-50%,-50%) scale(${0.6 + 0.4 * pill})`, opacity: pill, background: "var(--kx-gold)", color: "var(--kx-ink)", font: `900 ${pillFont}px var(--font-head)`, padding: `${Math.round(pillFont * 0.3)}px ${Math.round(pillFont * 0.6)}px`, borderRadius: 999, whiteSpace: "nowrap", boxShadow: "0 8px 24px rgba(0,0,0,.35)" }}>{m2} m²</div>
       ) : null}
     </>
   );
@@ -180,7 +185,7 @@ function InfoLote({ d, p }) {
   return (
     <>
       <Chrome d={d} /><Shade h={1000} />
-      <div style={{ position: "absolute", left: 64, right: 150, bottom: SAFE_BOTTOM + 40, display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ position: "absolute", left: L0, right: R0, bottom: SAFE_BOTTOM + 20, display: "flex", flexDirection: "column", gap: 14 }}>
         {info.map((x, i) => (
           <div key={i} style={{ ...enter(p, i, 0.12), display: "flex", alignItems: "center", gap: 24, background: "var(--kx-cream)", borderRadius: 24, padding: "24px 30px", color: "var(--kx-red)", boxShadow: "0 12px 30px rgba(0,0,0,.25)" }}>
             <Icon name={x.ic} style={{ width: 64, height: 64, flex: "none" }} />
@@ -198,7 +203,7 @@ function Cierre({ d, office, p }) {
   const sur = d.segmento === "sur";
   return (
     <div style={{ position: "absolute", inset: 0, background: "var(--kx-red-dark)", color: "#fff" }}>
-      <div style={{ position: "absolute", left: 90, right: 90, top: 0, bottom: SAFE_BOTTOM - 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      <div style={{ position: "absolute", left: L0 + 26, right: R0, top: SV.top, bottom: SAFE_BOTTOM + 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <div style={enter(p, 0)}><Logo variant="blanco" height={110} /></div>
         {office?.tagline ? <div style={{ ...enter(p, 1), font: "700 24px var(--font-head)", letterSpacing: ".3em", color: "var(--kx-gold)", marginTop: 26 }}>{office.tagline}</div> : null}
         <div style={{ ...enter(p, 2), width: "100%", height: 4, background: "var(--kx-gold)", margin: "70px 0 60px" }} />
@@ -210,7 +215,7 @@ function Cierre({ d, office, p }) {
           {office?.instagram ? <div style={{ display: "flex", alignItems: "center", gap: 16, font: "500 36px var(--font-body)" }}><Icon name="instagram" style={{ width: 44, height: 44, color: "var(--kx-gold)" }} />{office.instagram}</div> : null}
         </div>
       </div>
-      <div style={{ position: "absolute", left: 90, right: 90, bottom: SAFE_BOTTOM - 160, display: "flex", justifyContent: "space-between", alignItems: "center", ...enter(p, 6) }}>
+      <div style={{ position: "absolute", left: L0 + 26, right: R0, bottom: SAFE_BOTTOM + 10, display: "flex", justifyContent: "space-between", alignItems: "center", ...enter(p, 6) }}>
         <span style={{ font: "600 22px var(--font-head)", letterSpacing: ".24em", color: "var(--kx-gold)" }}>{office?.lat || ""}</span>
         <Confotur show={d.confotur} size={150} />
       </div>

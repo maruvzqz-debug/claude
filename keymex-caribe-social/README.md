@@ -1,48 +1,34 @@
-# KEYMEX Caribe · Generador de Post + Reel
+# KEYMEX Caribe · Contenido de Instagram y TikTok
 
-Pasale a Claude **el link de una propiedad o un video** y devuelve:
+Dos herramientas que comparten las mismas plantillas de marca:
 
-| Salida | Formato |
+1. **KEYMEX Caribe Studio** (`app/`): app web para armar fichas, lotes con drone, hooks, educativos, prueba social, slides de foto, stories y portadas de destacadas, con caption automática y exportación en ZIP.
+2. **Generador de reels** (`generate.mjs`): de una propiedad (link, fotos o video) saca carrusel, story, reel animado y caption.
+
+## Zonas seguras (todas las plantillas)
+| Formato | Regla |
 |---|---|
-| `post-01…05.png` | Carrusel 1080×1350 (portada · ficha · galería + destacados · lifestyle · CTA) |
-| `reel.mp4` | Reel 1080×1920, ~18 s: gancho → datos → precio → placa roja de cierre |
-| `reel-portada.jpg` | Portada del reel |
-| `caption.txt` | Caption con ficha, CTA y hashtags |
+| 9:16 (Reels, Stories, TikTok, portada de reel) | Texto y tarjetas dentro de x 60–940 · y 220–1440. Arriba 220 px (barra de IG/TikTok), abajo 480 px (usuario, caption, audio, navegación), derecha 140 px (botones). Las fotos sí ocupan todo el lienzo. |
+| Feed 4:5 (1080×1350) | La grilla del perfil muestra el centro en 3:4: recorta 34 px por lado. El texto va a ≥ 56 px del borde. |
+| Portada de reel en la grilla | Se ve el centro 3:4 (y 240–1680): queda cubierto por la zona 220–1440. |
 
-## Uso manual
-```bash
-cd app && npm install && npm run build && cd ..   # una vez: el motor usa las plantillas de la app
-node generate.mjs propiedades/<carpeta>            # carrusel + story + reel animado + caption
-node generate.mjs propiedades/<carpeta> --frame    # lotes: fotograma 9:16 con grilla para marcar el polígono
-```
-La carpeta lleva `propiedad.json` + `fotos/` y/o `video.mp4` (y opcional `musica.mp3`). Resultado en `propiedades/<carpeta>/salida/`.
-Ejemplos: `propiedades/ejemplo-cap-cana` (villa con fotos) y `propiedades/ejemplo-lote-drone` (lote con video de drone y polígono animado).
-Datos fijos de la oficina en `oficina.json`. Logos oficiales en `assets/`.
+Los valores están en `app/src/lib/format.js` (`SAFE`) y en `generate.mjs`. La app tiene el interruptor **"Zonas seguras IG + TikTok"** para verlas en la vista previa (no se exportan). En lotes, el generador avisa si un vértice del polígono cae bajo la interfaz.
 
----|---|
-| `post-01…05.png` | Carrusel 1080×1350 (portada · ficha · galería + destacados · lifestyle · CTA) |
-| `reel.mp4` | Reel 1080×1920, ~18 s: gancho → datos → precio → placa roja de cierre |
-| `reel-portada.jpg` | Portada del reel |
-| `caption.txt` | Caption con ficha, CTA y hashtags |
-
-## Uso manual
-```bash
-node generate.mjs propiedades/<carpeta>
-```
-La carpeta lleva `propiedad.json` + `fotos/` y/o `video.mp4` (y opcional `musica.mp3`). Resultado en `propiedades/<carpeta>/salida/`.
-
-Logos oficiales (KEYMEX Caribe rojo/blanco y sello CONFOTUR) ya cargados en `assets/`. El WhatsApp del agente se pide en cada pieza.
-
----
-
-# KEYMEX Caribe Studio (app web)
-
-Carpeta `app/` · React + Vite. Plantillas: Ficha (clara/oscura) · Lote con drone (editor de polígono) · Hook · Educativo (3–6 pasos) · Prueba social (collage 3–5) · Slide foto · Story 9:16 de cualquiera · Portadas de destacadas.
-Incluye caption automática (según segmento: inversor / familia / inversor AR-CL-PY), selector US$/RD$, sello CONFOTUR opcional, validaciones (precio, 1 palabra acento, contacto del agente, contraste AA) y carga masiva por CSV → ZIP.
-
+## KEYMEX Caribe Studio
 ```bash
 cd app && npm install
-npm run dev     # editar y probar en http://localhost:5173
-npm run build   # genera dist/index.html (un solo archivo autocontenido)
+npm run dev     # http://localhost:5173
+npm run build   # dist/index.html: un solo archivo autocontenido (también lo usa el generador)
 ```
-CHANTAL: se carga desde la pestaña "Oficina y marca" (archivo .otf/.ttf/.woff2). Hasta entonces se usa una script provisoria.
+CHANTAL: se carga desde la pestaña "Oficina y marca". Hasta entonces se usa una script provisoria.
+
+## Generador de reels
+```bash
+node generate.mjs propiedades/<carpeta>            # carrusel + story + reel animado + caption
+node generate.mjs propiedades/<carpeta> --frame    # lotes: fotograma 9:16 con grilla y zonas prohibidas en rojo
+```
+La carpeta lleva `propiedad.json` + `fotos/` y/o `video.mp4` (y opcional `musica.mp3`). Salida en `propiedades/<carpeta>/salida/`:
+`post-01-portada.png`, `post-NN-foto.png` (1080×1350), `story-portada.png` = `reel-portada.png` (1080×1920), `reel.mp4`, `caption.txt`.
+Ejemplos: `propiedades/ejemplo-cap-cana` (villa con fotos) y `propiedades/ejemplo-lote-drone` (lote con video de drone y polígono animado).
+
+Datos fijos de la oficina en `oficina.json`. Logos oficiales (KEYMEX Caribe rojo/blanco y sello CONFOTUR) en `assets/`. El WhatsApp del agente se pide en cada pieza.

@@ -28,6 +28,12 @@ Referencia de estilo/estructura: @bierard (NO copiar logo, fotos, textos ni slog
 6. **Revisar**: extraer 5–7 fotogramas del reel y una hoja con los slides y mirarlos (texto cortado, polígono desalineado, foto mal encuadrada). Corregir y regenerar.
 7. **Entregar** con SendUserFile: slides, story, `reel.mp4` y la caption pegada en el chat lista para copiar. Recordar: agregar audio en tendencia desde Instagram (o dejar `musica.mp3` con licencia en la carpeta) y aprobación de Marketing KEYMEX América antes de publicar.
 
+## Zonas seguras (obligatorio, todas las piezas)
+- 9:16 (reel, story, TikTok, portada de reel): texto, logo, precio y tarjetas dentro de x 60–940 · y 220–1440 (arriba 220, abajo 480, derecha 140, izquierda 60). Ya está en las plantillas; si se agrega algo nuevo, respetarlo.
+- Feed 4:5: la grilla del perfil recorta 34 px por lado (3:4); texto a ≥ 56 px del borde.
+- Lotes: el polígono y sus medidas deben quedar dentro de la zona segura; `--frame` pinta en rojo lo prohibido y el generador avisa con ⚠ si un vértice cae afuera → elegir otro `t_freeze` o reubicar.
+- Al revisar fotogramas, superponer esas zonas y confirmar que ningún texto quede debajo.
+
 ## Archivos de marca
 - `assets/logo-keymex-rojo.png` / `logo-keymex-blanco.png` (oficial "KEYMEX · LE CENTRE IMMOBILIER CARIBE"), `assets/sello-confotur.png`. También embebidos en la app (`app/src/assets/brand`).
 - `oficina.json`: nombre, tagline, instagram, web, email, firma LAT. Cambiarlo ahí.

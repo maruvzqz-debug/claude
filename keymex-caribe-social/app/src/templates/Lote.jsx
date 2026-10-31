@@ -18,7 +18,7 @@ export default function Lote({ d, office, fmt = "feed", animate = false }) {
   const { w, h } = FORMATS[fmt];
   const L = d.lote || {};
   const pts = (L.poligono || []).filter((p) => Array.isArray(p) && p.length === 2);
-  const headTop = { feed: 168, story: 340, square: 150 }[fmt];
+  const headTop = { feed: 168, story: 370, square: 150 }[fmt];
   const c = centroid(pts);
   const precio = fmtMoney(d.precio, d.moneda);
   const m2 = fmtNum(d.m2_solar);

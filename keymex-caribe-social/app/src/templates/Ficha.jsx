@@ -14,7 +14,7 @@ export function dimsOf(d) {
 export default function Ficha({ d, office, fmt = "feed" }) {
   const dark = d.variante === "oscura";
   const H = { feed: 1350, story: 1920, square: 1080 }[fmt];
-  const headTop = { feed: 168, story: 340, square: 150 }[fmt];
+  const headTop = { feed: 168, story: 370, square: 150 }[fmt];
   const bottom = footerH(fmt) + 36;
   const dims = dimsOf(d);
   const amen = (d.amenidades || []).filter((a) => AMENIDADES[a]).slice(0, 5);

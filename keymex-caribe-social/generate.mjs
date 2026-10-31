@@ -25,6 +25,8 @@ if (!process.argv[2] || !fs.existsSync(path.join(dir, "propiedad.json"))) die("U
 if (!fs.existsSync(APP)) die("Falta compilar la app: cd app && npm install && npm run build");
 
 const FPS = 30, T = 0.4; // fundido entre escenas
+// Zona segura 9:16 = unión de Instagram Reels/Stories y TikTok (igual que app/src/lib/format.js)
+const SAFE = { top: 220, bottom: 480, left: 60, right: 140 };
 const out = path.join(dir, "salida"), tmp = path.join(out, ".tmp");
 fs.mkdirSync(out, { recursive: true });
 fs.rmSync(tmp, { recursive: true, force: true });
@@ -82,11 +84,18 @@ if (isLote) {
     const g = path.join(out, "marcar-poligono.jpg");
     let vf = "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920";
     for (let i = 1; i < 10; i++) vf += `,drawbox=x=${i * 108}:y=0:w=2:h=1920:color=white@0.6:t=fill,drawbox=x=0:y=${i * 192}:w=1080:h=2:color=white@0.6:t=fill`;
+    // zonas tapadas por Instagram/TikTok en rojo: el lote tiene que quedar fuera de ellas
+    vf += `,drawbox=x=0:y=0:w=1080:h=${SAFE.top}:color=red@0.35:t=fill,drawbox=x=0:y=${1920 - SAFE.bottom}:w=1080:h=${SAFE.bottom}:color=red@0.35:t=fill,drawbox=x=${1080 - SAFE.right}:y=${SAFE.top}:w=${SAFE.right}:h=${1920 - SAFE.top - SAFE.bottom}:color=red@0.35:t=fill`;
     ff(["-i", still, "-vf", vf, "-frames:v", "1", "-q:v", "3", g]);
     console.log(`→ ${g}\n  Marca lote.poligono_reel en propiedad.json como [[x,y],…] (0–1; cada línea de la grilla = 0.1).`);
     if (ONLY_FRAME) process.exit(0);
     console.warn("⚠ Lote sin polígono: el revelado saldrá sin trazado.");
   }
+}
+
+if (isLote && d.lote.poligono_reel?.length) {
+  const fuera = d.lote.poligono_reel.filter(([x, y]) => x * 1080 < SAFE.left || x * 1080 > 1080 - SAFE.right || y * 1920 < SAFE.top || y * 1920 > 1920 - SAFE.bottom);
+  if (fuera.length) console.warn(`⚠ ${fuera.length} vértice(s) del lote caen bajo la interfaz de Instagram/TikTok. Elegí otro t_freeze o encuadre (ver marcar-poligono.jpg).`);
 }
 
 // ---------- escenas del reel ----------

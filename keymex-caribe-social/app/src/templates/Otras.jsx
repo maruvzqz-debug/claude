@@ -4,7 +4,7 @@ import { splitScript, FORMATS } from "../lib/format.js";
 
 /* ---------- 3 · Hook / estilo de vida ---------- */
 export function Hook({ d, office, fmt = "feed" }) {
-  const top = { feed: 230, story: 420, square: 190 }[fmt];
+  const top = { feed: 230, story: 440, square: 190 }[fmt];
   return (
     <Slide kind="hook" fmt={fmt}>
       <Photo src={d.fotos?.[0]} pos={d.foto_pos} />
@@ -29,10 +29,10 @@ export function Pasos({ d, office, fmt = "feed" }) {
   const steps = (d.pasos || []).filter((s) => s.texto).slice(0, 6);
   const n = steps.length;
   const shift = d.confotur ? (fmt === "square" ? 90 : 110) : 0; // el sello ocupa la esquina superior derecha
-  const headTop = { feed: 170, story: 330, square: 150 }[fmt] + shift;
-  const gridTop = { feed: 470, story: 720, square: 400 }[fmt] + shift;
-  const stepW = n <= 3 ? 300 : n === 4 ? 420 : 300;
-  const scale = fmt === "square" && n > 3 ? 0.78 : 1;
+  const headTop = { feed: 170, story: 370, square: 150 }[fmt] + shift;
+  const gridTop = { feed: 470, story: 650, square: 400 }[fmt] + shift;
+  const stepW = fmt === "story" ? (n === 4 ? 400 : 270) : n <= 3 ? 300 : n === 4 ? 420 : 300;
+  const scale = n > 3 && fmt === "square" ? 0.78 : n > 3 && fmt === "story" ? 0.82 : 1;
   return (
     <Slide kind="pasos" fmt={fmt}>
       <Photo src={d.fotos?.[0]} pos={d.foto_pos} />
@@ -69,8 +69,8 @@ export function Social({ d, office, fmt = "feed" }) {
   const fotos = (d.fotos || []).filter(Boolean).slice(0, 5);
   const n = Math.max(1, fotos.length);
   const L = AREAS[n];
-  const collageH = h - footerH(fmt) - 40 - (fmt === "story" ? 420 : 200);
-  const top = fmt === "story" ? 160 : 40;
+  const top = fmt === "story" ? 240 : 40;
+  const collageH = h - top - footerH(fmt) - (fmt === "story" ? 240 : 200);
   return (
     <Slide kind="social" fmt={fmt}>
       <div className="collage" style={{ top, height: collageH, gridTemplateColumns: L.cols, gridTemplateRows: L.rows, gridTemplateAreas: L.areas.join(" ") }}>
@@ -78,7 +78,7 @@ export function Social({ d, office, fmt = "feed" }) {
           <div key={i} style={{ gridArea: "abcde"[i] }}><Photo src={f} /></div>
         ))}
       </div>
-      <div style={{ position: "absolute", top: top + 24, right: 64, zIndex: 3 }}>
+      <div style={{ position: "absolute", top: top + 24, right: fmt === "story" ? 150 : 64, zIndex: 3 }}>
         <Logo variant="blanco" height={44} style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,.5))" }} />
       </div>
       <div className="sticker" style={{ top: top + collageH - 150 }}>

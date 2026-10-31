@@ -153,3 +153,22 @@
 .kx.dest .in { position: relative; display: flex; flex-direction: column; align-items: center; gap: 26px; color: #fff; }
 .kx.dest .in .icon { width: 300px; height: 300px; stroke-width: 1.6; }
 .kx.dest .in span { font: 800 64px var(--font-head); letter-spacing: .14em; text-transform: uppercase; text-align: center; max-width: 640px; line-height: 1.05; }
+
+/* ===== Zonas seguras 9:16 (Instagram Reels/Stories + TikTok): izq 60 · der 140 · arriba 220 · abajo 480 =====
+   Textos y tarjetas nunca bajo los botones de la derecha; las fotos sí pueden ocupar todo el lienzo. */
+.kx.fmt-story .top { left: 64px; right: 150px; }
+.kx.fmt-story .head,
+.kx.fmt-story .bottom,
+.kx.fmt-story .info,
+.kx.fmt-story .q,
+.kx.fmt-story .vals,
+.kx.fmt-story .sub { left: 64px !important; right: 150px !important; }
+.kx.fmt-story .frase { right: 150px; }
+.kx.fmt-story .pill-price { right: 150px; }
+.kx.fmt-story .grid { left: 60px !important; right: 140px !important; }
+.kx.fmt-story .cierre { left: 60px; right: 140px; }
+.kx.fmt-story .footer .items { gap: 18px; }
+.kx.fmt-story .footer .it { font-size: 19px; }
+.kx.fmt-story.foto .logo { top: 230px; right: 150px; }
+.kx.fmt-story.foto .cap { bottom: 500px; left: 64px; }
+/* Feed 4:5: la grilla del perfil recorta 34 px por lado (3:4); todo el texto ya va a ≥ 56 px del borde. */

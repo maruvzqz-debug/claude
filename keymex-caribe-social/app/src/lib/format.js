@@ -47,3 +47,14 @@ export function splitScript(text = "") {
 export function slugify(s = "") {
   return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "pieza";
 }
+
+// ---------- Zonas seguras (px sobre el lienzo de 1080 de ancho) ----------
+// Vertical 9:16 = la unión más estricta de Instagram Reels, Instagram Stories y TikTok:
+//   arriba 220 (título "Reels", cámara, barra de progreso de Stories, búsqueda de TikTok)
+//   abajo 480 (usuario, caption, audio, barra de respuesta, navegación de TikTok)
+//   derecha 140 (me gusta / comentar / compartir / perfil), izquierda 60
+// Feed 4:5: la grilla del perfil muestra el centro en 3:4 → recorta 34 px por lado.
+export const SAFE = {
+  vertical: { top: 220, bottom: 480, left: 60, right: 140 },
+  feed: { side: 34 },
+};

@@ -6,7 +6,7 @@ import Lote from "./templates/Lote.jsx";
 import { Hook, Pasos, Social, FotoSlide, Destacada } from "./templates/Otras.jsx";
 import { BRAND } from "./templates/common.jsx";
 import { Icon, AMENIDADES, ICON_NAMES } from "./components/Icons.jsx";
-import { FORMATS, slugify } from "./lib/format.js";
+import { FORMATS, SAFE, slugify } from "./lib/format.js";
 import { captionPropiedad, captionGenerica, SEGMENTOS } from "./lib/caption.js";
 import { validate, checkContrast } from "./lib/validate.js";
 import { nodeToPng, dataUrlToBytes, zipAndDownload } from "./lib/exporter.js";
@@ -83,13 +83,47 @@ function Photos({ fotos, setFotos, max = 10, hint }) {
   );
 }
 
+/* ---------------- guía de zonas seguras (solo vista previa, nunca se exporta) ---------------- */
+function SafeGuides({ fmt }) {
+  const { w, h } = FORMATS[fmt];
+  const tint = "rgba(173,29,40,.28)", line = { stroke: "#fff", strokeWidth: 3, strokeDasharray: "14 10", fill: "none" };
+  const txt = { fill: "#fff", fontSize: 30, fontFamily: "Montserrat, sans-serif", fontWeight: 700, paintOrder: "stroke", stroke: "rgba(0,0,0,.6)", strokeWidth: 6 };
+  if (fmt === "story") {
+    const v = SAFE.vertical;
+    return (
+      <svg className="guides" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+        <rect x="0" y="0" width={w} height={v.top} fill={tint} />
+        <rect x="0" y={h - v.bottom} width={w} height={v.bottom} fill={tint} />
+        <rect x={w - v.right} y={v.top} width={v.right} height={h - v.top - v.bottom} fill={tint} />
+        <rect x="0" y={v.top} width={v.left} height={h - v.top - v.bottom} fill={tint} />
+        <rect x={v.left} y={v.top} width={w - v.left - v.right} height={h - v.top - v.bottom} style={line} />
+        <text x="24" y={v.top - 24} style={txt}>Barra superior IG / TikTok</text>
+        <text x="24" y={h - v.bottom + 50} style={txt}>Usuario · caption · audio</text>
+        <text x={w - 24} y={v.top + 60} textAnchor="end" style={txt}>Botones</text>
+      </svg>
+    );
+  }
+  if (fmt === "feed") {
+    const s = SAFE.feed.side;
+    return (
+      <svg className="guides" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+        <rect x="0" y="0" width={s} height={h} fill={tint} /><rect x={w - s} y="0" width={s} height={h} fill={tint} />
+        <line x1={s} y1="0" x2={s} y2={h} style={line} /><line x1={w - s} y1="0" x2={w - s} y2={h} style={line} />
+        <text x={s + 14} y={h / 2} style={txt}>Recorte grilla 3:4</text>
+      </svg>
+    );
+  }
+  return null;
+}
+
 /* ---------------- slide escalado ---------------- */
-function Scaled({ fmt, width = 300, children, onPoint, nodeRef }) {
+function Scaled({ fmt, width = 300, children, onPoint, nodeRef, guides }) {
   const { w, h } = FORMATS[fmt];
   const k = width / w;
   return (
     <div className="scaler" style={{ width, height: h * k }}>
       <div className="inner" style={{ transform: `scale(${k})`, width: w, height: h }} ref={nodeRef}>{children}</div>
+      {guides ? <SafeGuides fmt={fmt} /> : null}
       {onPoint ? <div className="clicklayer" onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); onPoint([(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]); }} /> : null}
     </div>
   );
@@ -133,6 +167,8 @@ export default function App() {
   // El agente NO se guarda: se pide en cada pieza (puede ser para otro agente).
   const [agente, setAgente] = useState({ nombre: "", whatsapp: "", email: "" });
   const [fmt, setFmt] = useState("feed");
+  const [guides, setGuides] = useState(() => LS.get("kx.guides", true));
+  useEffect(() => LS.set("kx.guides", guides), [guides]);
   const [toast, setToast] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -240,7 +276,10 @@ export default function App() {
 
           <section className="stage">
             <div className="panel stage-bar">
-              <Seg value={fmt} onChange={setFmt} options={{ feed: "Feed 4:5", story: "Story 9:16", square: "1:1" }} />
+              <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+                <Seg value={fmt} onChange={setFmt} options={{ feed: "Feed 4:5", story: "Story / Reel 9:16", square: "1:1" }} />
+                <label className="chk" htmlFor="chk-guides"><input id="chk-guides" type="checkbox" checked={guides} onChange={(e) => setGuides(e.target.checked)} /> Zonas seguras IG + TikTok</label>
+              </div>
               <button className="btn primary" type="button" disabled={busy || errors.length > 0} onClick={exportZip}>
                 {busy ? "Exportando…" : `Exportar ZIP (${slides.length + (story ? 1 : 0)} PNG + caption)`}
               </button>
@@ -255,7 +294,7 @@ export default function App() {
               {slides.map((s, i) => (
                 <div className="thumb" key={s.name}>
                   <div className="lbl">{s.name.replace(/^\d+-/, `${i + 1} · `)}</div>
-                  <Scaled fmt={fmt} width={i === 0 ? 340 : 220} nodeRef={(n) => (refs.current[s.name] = n?.firstChild)}
+                  <Scaled fmt={fmt} guides={guides} width={i === 0 ? 340 : 220} nodeRef={(n) => (refs.current[s.name] = n?.firstChild)}
                     onPoint={i === 0 && editPoly && kind === "propiedad" ? (p) => setIn("lote", { poligono: [...(raw.lote?.poligono || []), p.map((x) => +x.toFixed(4))] }) : null}>
                     {s.el}
                   </Scaled>
@@ -264,7 +303,7 @@ export default function App() {
               {story && fmt !== "story" ? (
                 <div className="thumb">
                   <div className="lbl">Story 9:16</div>
-                  <Scaled fmt="story" width={190} nodeRef={(n) => (storyRef.current = n?.firstChild)}>{story.el}</Scaled>
+                  <Scaled fmt="story" guides={guides} width={190} nodeRef={(n) => (storyRef.current = n?.firstChild)}>{story.el}</Scaled>
                 </div>
               ) : null}
             </div>
