@@ -3,7 +3,7 @@
 // renderiza fotogramas con p creciente y luego congela el último.
 import { Logo, Confotur } from "./common.jsx";
 import { Icon, AMENIDADES } from "../components/Icons.jsx";
-import { fmtMoney, fmtNum, splitAcento, splitScript, SAFE } from "../lib/format.js";
+import { fmtMoney, fmtNum, splitAcento, splitScript, SAFE, precioTexto, precioRotulo } from "../lib/format.js";
 import { dimsOf } from "./Ficha.jsx";
 import { centroid } from "./Lote.jsx";
 
@@ -34,7 +34,7 @@ const Shade = ({ h = 1100 }) => <div style={{ position: "absolute", inset: "auto
 function Gancho({ d, p }) {
   const texto = d.hook_reel || d.titulo || "";
   const parts = /\*/.test(texto) ? splitScript(texto).map((x) => ({ t: x.t, s: x.s })) : splitAcento(texto, d.palabra_acento).map((x) => ({ t: x.t, a: x.a }));
-  const tag = d.tipo === "lote" ? (d.operacion === "alquiler" ? "Terreno en alquiler" : "Terreno en venta") : (d.etiqueta || (d.operacion === "alquiler" ? "En alquiler" : "En venta"));
+  const tag = d.tipo === "lote" ? (d.operacion === "alquiler" ? "Terreno en alquiler" : "Terreno en venta") : (d.etiqueta || (d.operacion === "temporal" ? "Alquiler temporal" : d.operacion === "alquiler" ? "En alquiler" : "En venta"));
   return (
     <>
       <Chrome d={d} /><Shade h={1300} />
@@ -111,14 +111,14 @@ function Frase({ d, p }) {
 }
 
 function Precio({ d, p }) {
-  const precio = fmtMoney(d.precio, d.moneda) || "Consultar";
+  const precio = precioTexto(d) || "Consultar";
   const linea = [d.tipo && d.tipo[0].toUpperCase() + d.tipo.slice(1), fmtNum(d.habitaciones) && `${fmtNum(d.habitaciones)} hab`, fmtNum(d.m2_construccion || d.m2_solar) && `${fmtNum(d.m2_construccion || d.m2_solar)} m²`].filter(Boolean).join(" · ");
   return (
     <>
       <Chrome d={d} /><Shade h={1000} />
       <div style={{ position: "absolute", left: L0, right: R0, bottom: SAFE_BOTTOM + 30 }}>
         <div style={{ ...enter(p, 0), display: "inline-block", background: "var(--kx-red)", color: "#fff", borderRadius: 26, padding: "32px 40px", borderBottom: "6px solid var(--kx-gold)", boxShadow: "0 14px 34px rgba(0,0,0,.3)" }}>
-          <small style={{ display: "block", font: "700 22px var(--font-head)", letterSpacing: ".24em", textTransform: "uppercase" }}>{d.precio_desde ? "Desde" : d.operacion === "alquiler" ? "Precio de alquiler" : "Precio de venta"}</small>
+          <small style={{ display: "block", font: "700 22px var(--font-head)", letterSpacing: ".24em", textTransform: "uppercase" }}>{precioRotulo(d)}</small>
           <b style={{ display: "block", font: "900 104px/1 var(--font-head)", marginTop: 10, whiteSpace: "nowrap" }}>{precio}</b>
         </div>
         <div style={{ ...enter(p, 1), color: "#fff", font: "500 34px var(--font-body)", marginTop: 26 }}>{linea}</div>

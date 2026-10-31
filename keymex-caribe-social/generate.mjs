@@ -29,6 +29,8 @@ const FPS = 30, T = 0.4; // fundido entre escenas
 const SAFE = { top: 220, bottom: 480, left: 60, right: 140 };
 const out = path.join(dir, "salida"), tmp = path.join(out, ".tmp");
 fs.mkdirSync(out, { recursive: true });
+// salida limpia en cada corrida (se conserva el fotograma para marcar el polígono)
+if (!ONLY_FRAME) for (const f of fs.readdirSync(out)) if (!["marcar-poligono.jpg"].includes(f)) fs.rmSync(path.join(out, f), { recursive: true, force: true });
 fs.rmSync(tmp, { recursive: true, force: true });
 fs.mkdirSync(tmp, { recursive: true });
 const ff = (args) => execFileSync("ffmpeg", ["-y", "-loglevel", "error", ...args], { stdio: "inherit" });
@@ -69,6 +71,7 @@ if (isLote) {
   else if (videoPath) { still = path.join(out, "lote-fotograma.jpg"); ff(["-ss", String(L.t_freeze ?? Math.min(dur(videoPath) * 0.5, 6)), "-i", videoPath, "-frames:v", "1", "-q:v", "2", still]); }
   else still = fotos[0];
   // Polígono marcado en la portada 4:5 (app) → convertir a 9:16 sobre la misma foto
+  if (!L.poligono_reel?.length && L.poligono?.length >= 3 && L.base?.fmt === "story" && still === fotos[0]) L.poligono_reel = L.poligono; // marcado ya en 9:16
   if (!L.poligono_reel?.length && L.poligono?.length >= 3 && still === fotos[0]) {
     const [iw, ih] = dims(still);
     const map = ([x, y], from, to) => {
@@ -127,9 +130,13 @@ await shot({ kind: portadaKind, d: pageData, office, fmt: "feed" }, path.join(ou
 for (let i = 1; i < Math.min(fotos.length, 10); i++) await shot({ kind: "foto", src: fileUrl(fotos[i]), fmt: "feed" }, path.join(out, `post-${String(i + 1).padStart(2, "0")}-foto.png`));
 await shot({ kind: portadaKind, d: pageData, office, fmt: "story" }, path.join(out, "story-portada.png"));
 fs.copyFileSync(path.join(out, "story-portada.png"), path.join(out, "reel-portada.png"));
-const caption = raw.caption || (await page.evaluate(([dd, oo]) => window.__kxCaption(dd, oo), [pageData, office]));
-fs.writeFileSync(path.join(out, "caption.txt"), caption + "\n");
-console.log(`✓ Carrusel ${Math.min(fotos.length, 10)} slides + story + caption`);
+// Copy optimizado por red (Instagram · TikTok · Facebook) con 5 hashtags de nicho según la operación
+for (const red of await page.evaluate(() => window.__kxRedes)) {
+  const txt = (red === "instagram" && raw.caption) || (await page.evaluate(([dd, oo, rr]) => window.__kxCaption(dd, oo, rr), [pageData, office, red]));
+  fs.writeFileSync(path.join(out, `copy-${red}.txt`), txt + "\n");
+}
+fs.rmSync(path.join(out, "caption.txt"), { force: true });
+console.log(`✓ Carrusel ${Math.min(fotos.length, 10)} slides + story + copy para Instagram, TikTok y Facebook`);
 
 // Capas animadas del reel (PNG transparentes por fotograma)
 for (const s of SCENES) {

@@ -1,0 +1,36 @@
+CARRUSEL: Invertir desde Argentina
+---
+PORTADA: Cómo invertir en *República Dominicana* desde Argentina
+BAJADA: Guía rápida en 4 pasos
+FOTO: 1
+---
+DATO: 15 años
+TEXTO: de beneficios fiscales en proyectos clasificados CONFOTUR
+---
+PASO: Elegí el proyecto
+TEXTO: Te mostramos opciones en preventa con plan de pagos en dólares.
+ICONO: casa
+---
+PASO: Reservá tu unidad
+TEXTO: Con un monto inicial bloqueás precio y ubicación.
+ICONO: dinero
+---
+PASO: Firmá a distancia
+TEXTO: Todo el proceso se puede hacer online, con respaldo legal.
+ICONO: firma
+---
+PASO: Recibí tus llaves
+TEXTO: Y empezá a rentar en temporada alta.
+ICONO: llave
+---
+LISTA: Qué incluye el proyecto
+- Piscina y área social
+- Seguridad 24/7
+- A minutos de la playa
+- Administración de rentas
+---
+FRASE: Tu inversión comienza aquí
+FOTO: 2
+---
+CIERRE: Agendá tu videollamada
+TEXTO: Te mandamos la ficha completa y el plan de pagos por WhatsApp.

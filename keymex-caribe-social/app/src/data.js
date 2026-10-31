@@ -1,4 +1,5 @@
 // Contenido de ejemplo (marcado como tal). El agente/WhatsApp nunca se precarga.
+import { EJEMPLO_CARRUSEL } from "./lib/carrusel.js";
 export const OFFICE_DEFAULT = {
   nombre: "KEYMEX Caribe",
   tagline: "LA REVOLUCIÓN DEL REAL ESTATE",
@@ -24,6 +25,7 @@ export const DEFAULTS = {
     descripcion: "", cierre_caption: "", foto_pos: "center",
     lote: { poligono: [], medidas: [], uso: "Vivienda unifamiliar", niveles: "2", etiqueta_superior: "RESIDENCIAL" },
   },
+  carrusel: { segmento: "sur", confotur: true, operacion: "venta", tipo: "apartamento", zona: "Playa Nueva Romana", guion: EJEMPLO_CARRUSEL },
   hook: {
     segmento: "inversor", confotur: false,
     pregunta: "¿Qué pasaría si tuvieras *tu villa* en Cap Cana?",

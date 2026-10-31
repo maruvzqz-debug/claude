@@ -1,6 +1,6 @@
 import { Slide, Photo, TopBar, Footer, footerH } from "./common.jsx";
 import { Icon, AMENIDADES } from "../components/Icons.jsx";
-import { fmtMoney, fmtNum, splitAcento } from "../lib/format.js";
+import { fmtMoney, fmtNum, splitAcento, precioRotulo, periodoDe } from "../lib/format.js";
 
 export function dimsOf(d) {
   const out = [];
@@ -8,6 +8,7 @@ export function dimsOf(d) {
   if (fmtNum(d.m2_construccion)) out.push({ v: fmtNum(d.m2_construccion), u: "m²", l: "construcción" });
   if (fmtNum(d.habitaciones)) out.push({ v: fmtNum(d.habitaciones), l: "habitaciones" });
   if (fmtNum(d.banos)) out.push({ v: fmtNum(d.banos), l: "baños" });
+  if (d.operacion === "temporal" && fmtNum(d.huespedes)) out.push({ v: fmtNum(d.huespedes), l: "huéspedes" });
   return out.slice(0, 4);
 }
 
@@ -17,7 +18,7 @@ export default function Ficha({ d, office, fmt = "feed" }) {
   const headTop = { feed: 168, story: 370, square: 150 }[fmt];
   const bottom = footerH(fmt) + 36;
   const dims = dimsOf(d);
-  const amen = (d.amenidades || []).filter((a) => AMENIDADES[a]).slice(0, 5);
+  const amen = (d.amenidades || []).filter((a) => AMENIDADES[a]).slice(0, fmt === "story" ? 4 : 5);
   const precio = fmtMoney(d.precio, d.moneda);
   return (
     <Slide kind="ficha" fmt={fmt} extra={dark ? "oscura" : "clara"}>
@@ -32,7 +33,7 @@ export default function Ficha({ d, office, fmt = "feed" }) {
         {d.bajada && fmt !== "square" ? <p className="bajada">{d.bajada}</p> : null}
       </div>
       {d.frase_script && fmt !== "square" ? (
-        <div className="frase script" style={{ top: Math.round(H * (fmt === "story" ? 0.47 : 0.46)) }}>{d.frase_script}</div>
+        <div className="frase script" style={{ top: Math.round(H * (fmt === "story" ? 0.39 : 0.46)) }}>{d.frase_script}</div>
       ) : null}
       <div className="bottom" style={{ bottom }}>
         {dims.length ? (
@@ -47,8 +48,8 @@ export default function Ficha({ d, office, fmt = "feed" }) {
             </div>
           ) : <div style={{ flex: 1 }} />}
           <div className="price">
-            <small>{d.operacion === "alquiler" ? "Precio de alquiler" : "Precio de venta"}</small>
-            <b>{d.precio_desde ? <span style={{ fontSize: 22, fontWeight: 700, display: "block", marginBottom: 4 }}>DESDE</span> : null}{precio || "Consultar"}</b>
+            <small>{d.precio_desde ? (d.operacion === "venta" || !d.operacion ? "Precio de venta" : precioRotulo({ ...d, precio_desde: false })) : precioRotulo(d)}</small>
+            <b>{d.precio_desde ? <span style={{ fontSize: 22, fontWeight: 700, display: "block", marginBottom: 4 }}>DESDE</span> : null}{precio || "Consultar"}{precio && periodoDe(d) ? <span style={{ fontSize: 24, fontWeight: 600 }}> / {periodoDe(d)}</span> : null}</b>
             {d.precio_nota ? <em>{d.precio_nota}</em> : null}
           </div>
         </div>

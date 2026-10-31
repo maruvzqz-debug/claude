@@ -44,22 +44,24 @@ export function TopBar({ office, dark, confotur, logoHeight = 58, fmt }) {
 
 // Footer: contacto siempre visible (agente + oficina) + filete dorado + firma LAT 18°N
 export function Footer({ office = {}, agente = {}, fmt }) {
-  const items = [];
-  if (agente.whatsapp) items.push(["whatsapp", agente.whatsapp]);
-  if (office.web) items.push(["web", office.web]);
-  else if (agente.email || office.email) items.push(["email", agente.email || office.email]);
-  if (office.instagram) items.push(["instagram", office.instagram]);
   const story = fmt === "story";
+  const mail = agente.email || (!office.web ? office.email : "");
   return (
     // En 9:16 la barra flota justo encima de la zona inferior que tapan Instagram y TikTok
-    <div className="footer" style={story ? { bottom: SAFE.vertical.bottom, left: SAFE.vertical.left - 20, right: SAFE.vertical.right - 20, borderRadius: 18, border: "none", boxShadow: "inset 0 4px 0 var(--kx-gold), 0 10px 30px rgba(0,0,0,.3)", padding: "0 30px", gap: 18 } : undefined}>
-      <Logo variant="blanco" height={40} />
-      <div className="items">
-        {items.map(([ic, txt]) => (
-          <div className="it" key={ic}><Icon name={ic} />{txt}</div>
-        ))}
+    <div className="footer" style={story ? { bottom: SAFE.vertical.bottom, left: SAFE.vertical.left - 20, right: SAFE.vertical.right - 20, borderRadius: 18, border: "none", boxShadow: "inset 0 4px 0 var(--kx-gold), 0 10px 30px rgba(0,0,0,.3)", padding: "0 26px", gap: 18 } : undefined}>
+      <Logo variant="blanco" height={story ? 34 : 40} />
+      <div className="agent">
+        {agente.nombre ? <b>{agente.nombre}</b> : null}
+        <div className="row">
+          {agente.whatsapp ? <div className="it fix"><Icon name="whatsapp" /><span>{agente.whatsapp}</span></div> : null}
+          {mail ? <div className="it grow"><Icon name="email" /><span>{mail}</span></div> : null}
+        </div>
       </div>
-      {office.lat ? <div className="lat">{office.lat}</div> : null}
+      <div className="office">
+        {office.instagram ? <div className="it"><Icon name="instagram" /><span>{office.instagram}</span></div> : null}
+        {office.web ? <div className="it"><Icon name="web" /><span>{office.web}</span></div> : null}
+        {office.lat && !(story && office.web) ? <div className="lat">{office.lat}</div> : null}
+      </div>
     </div>
   );
 }

@@ -41,6 +41,7 @@ const P = {
   firma: <><path d="M6 36c6-10 10-26 14-24s-6 22 0 22 8-12 12-10-2 10 2 10 6-4 8-4"/><path d="M6 42h36"/></>,
   check: <><circle cx="24" cy="24" r="19"/><path d="M15 24l6 6 12-13"/></>,
   banco: <><path d="M4 18L24 6l20 12z"/><path d="M8 18v18M16 18v18M32 18v18M40 18v18M4 40h40"/></>,
+  flecha: <><path d="M8 24h32M28 12l12 12-12 12"/></>,
   // Contacto
   whatsapp: <><path d="M8 40l2.5-8A17 17 0 1 1 17 38z"/><path d="M18 17c0 7 6 13 13 13l3-3-5-3-2 2c-3-1-5-3-6-6l2-2-3-5z"/></>,
   email: <><rect x="4" y="10" width="40" height="28" rx="3"/><path d="M4 12l20 14 20-14"/></>,

@@ -6,9 +6,14 @@ import ReelScene from "./templates/Reel.jsx";
 import Ficha from "./templates/Ficha.jsx";
 import Lote from "./templates/Lote.jsx";
 import { FotoSlide } from "./templates/Otras.jsx";
-import { captionPropiedad } from "./lib/caption.js";
+import { captionPropiedad, captionCarrusel, REDES } from "./lib/caption.js";
+import { parseCarrusel } from "./lib/carrusel.js";
+import CarruselSlide from "./templates/Carrusel.jsx";
 
-window.__kxCaption = (d, office) => captionPropiedad(d, office);
+window.__kxCaption = (d, office, red = "instagram") => captionPropiedad(d, office, red);
+window.__kxRedes = Object.keys(REDES);
+window.__kxParseCarrusel = (txt) => parseCarrusel(txt);
+window.__kxCaptionCarrusel = (d, office, red = "instagram") => captionCarrusel(parseCarrusel(d.guion).slides, d, office, red);
 
 export default function RenderHost() {
   const [props, setProps] = useState(null);
@@ -25,7 +30,7 @@ export default function RenderHost() {
   return (
     <div id="kx-render" style={{ display: "inline-block" }}>
       <style>{"html,body{background:transparent!important;margin:0}"}</style>
-      {kind === "reel" ? <ReelScene scene={scene} d={d} office={office} p={p} /> : kind === "foto" ? <FotoSlide src={props.src} fmt={fmt} /> : kind === "lote" ? <Lote d={d} office={office} fmt={fmt} /> : <Ficha d={d} office={office} fmt={fmt} />}
+      {kind === "carrusel" ? <CarruselSlide {...props.slide} d={d} office={office} fotos={d.fotos} /> : kind === "reel" ? <ReelScene scene={scene} d={d} office={office} p={p} /> : kind === "foto" ? <FotoSlide src={props.src} fmt={fmt} /> : kind === "lote" ? <Lote d={d} office={office} fmt={fmt} /> : <Ficha d={d} office={office} fmt={fmt} />}
     </div>
   );
 }

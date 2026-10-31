@@ -32,7 +32,7 @@ export function Pasos({ d, office, fmt = "feed" }) {
   const headTop = { feed: 170, story: 370, square: 150 }[fmt] + shift;
   const gridTop = { feed: 470, story: 650, square: 400 }[fmt] + shift;
   const stepW = fmt === "story" ? (n === 4 ? 400 : 270) : n <= 3 ? 300 : n === 4 ? 420 : 300;
-  const scale = n > 3 && fmt === "square" ? 0.78 : n > 3 && fmt === "story" ? 0.82 : 1;
+  const scale = n > 3 && fmt === "square" ? 0.68 : n > 3 && fmt === "story" ? 0.82 : 1;
   return (
     <Slide kind="pasos" fmt={fmt}>
       <Photo src={d.fotos?.[0]} pos={d.foto_pos} />

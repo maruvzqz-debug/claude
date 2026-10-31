@@ -23,10 +23,21 @@ Referencia de estilo/estructura: @bierard (NO copiar logo, fotos, textos ni slog
    Lote: `lote` {uso, niveles, medidas[] (una por lado, en orden), poligono_reel [[x,y]…] (0–1 sobre el cuadro 9:16), t_freeze (segundo del video para el revelado) o still (imagen)}.
 4. **Lote con drone**: correr `node generate.mjs propiedades/<slug> --frame`, MIRAR `salida/marcar-poligono.jpg` (grilla cada 0.1), escribir `lote.poligono_reel` con los vértices en orden y las `medidas` por lado. Si el polígono vino de la app (marcado en la portada 4:5 sobre la foto 01), el motor lo convierte solo.
 5. **Generar**: `node generate.mjs propiedades/<slug>` (≈40 s).
-   Salida en `salida/`: `post-01-portada.png` + `post-NN-foto.png` (1080×1350), `story-portada.png` = `reel-portada.png` (1080×1920), `reel.mp4`, `caption.txt`.
+   Salida en `salida/`: `post-01-portada.png` + `post-NN-foto.png` (1080×1350), `story-portada.png` = `reel-portada.png` (1080×1920), `reel.mp4`, `copy-instagram.txt`, `copy-tiktok.txt`, `copy-facebook.txt`.
    Reel propiedad: gancho → medidas → amenidades → frase → precio → cierre. Reel lote: gancho (video) → revelado (fotograma congelado + polígono que se dibuja, medidas, píldora m²) → info del lote → precio → cierre.
 6. **Revisar**: extraer 5–7 fotogramas del reel y una hoja con los slides y mirarlos (texto cortado, polígono desalineado, foto mal encuadrada). Corregir y regenerar.
-7. **Entregar** con SendUserFile: slides, story, `reel.mp4` y la caption pegada en el chat lista para copiar. Recordar: agregar audio en tendencia desde Instagram (o dejar `musica.mp3` con licencia en la carpeta) y aprobación de Marketing KEYMEX América antes de publicar.
+7. **Entregar** con SendUserFile: slides, story, `reel.mp4` y los copys (Instagram, TikTok, Facebook) pegados en el chat listos para copiar. Recordar: agregar audio en tendencia desde Instagram (o dejar `musica.mp3` con licencia en la carpeta) y aprobación de Marketing KEYMEX América antes de publicar.
+
+## Carrusel por guion (1 a 10 slides)
+Si el usuario manda un texto con bloques separados por `---` que empiezan con PORTADA:, PASO:, DATO:, LISTA:, TEXTO:, FOTO:, FRASE: o CIERRE: (opcionalmente encabezado con `CARRUSEL: título`), es un **guion de carrusel**.
+- Guardarlo en `propiedades/<slug>/guion.txt`, fotos en `fotos/01.jpg…` (FOTO: 1 = 01.jpg) y `carrusel.json` con `agente` {nombre, whatsapp, email}, `segmento`, `operacion` (venta|alquiler|temporal), `tipo`, `zona`, `confotur`.
+- Correr `node carrusel.mjs propiedades/<slug>` → `salida-carrusel/NN-tipo.png` (1080×1350) + `copy-instagram.txt`, `copy-tiktok.txt`, `copy-facebook.txt`.
+- Formato completo y ejemplo: `app/src/lib/carrusel.js` (EJEMPLO_CARRUSEL). Reglas: `*texto*` = script dorada (una por título), LISTA con ítems `- ` (máx. 7), máx. 10 slides; si falta CIERRE se agrega solo con el contacto.
+- Si el usuario pide un carrusel pero no manda guion, escribirlo yo en ese formato a partir de su pedido, mostrárselo y generar.
+
+## Copy por red y operación
+`operacion`: `venta` | `alquiler` | `temporal` (alquiler temporal, precio por noche; `precio_periodo` mes|semana|noche, `huespedes`, `min_noches`).
+Cada generación escribe `copy-instagram.txt` (gancho + ficha con emojis + CTA + firma), `copy-tiktok.txt` (corto, ≤ 300 caracteres) y `copy-facebook.txt` (descriptivo, pocas emojis), todos con **5 hashtags de nicho** según operación, tipo y zona (lógica en `app/src/lib/caption.js` → `hashtagsNicho`). Entregar los tres textos.
 
 ## Zonas seguras (obligatorio, todas las piezas)
 - 9:16 (reel, story, TikTok, portada de reel): texto, logo, precio y tarjetas dentro de x 60–940 · y 220–1440 (arriba 220, abajo 480, derecha 140, izquierda 60). Ya está en las plantillas; si se agrega algo nuevo, respetarlo.

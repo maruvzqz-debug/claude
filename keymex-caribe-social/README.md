@@ -22,13 +22,22 @@ npm run build   # dist/index.html: un solo archivo autocontenido (también lo us
 ```
 CHANTAL: se carga desde la pestaña "Oficina y marca". Hasta entonces se usa una script provisoria.
 
+## Carrusel por guion
+```bash
+node carrusel.mjs propiedades/<carpeta>   # guion.txt + carrusel.json + fotos/ → 1 a 10 slides + copy por red
+```
+Formato del guion: bloques separados por `---` que empiezan con `PORTADA:`, `PASO:`, `DATO:`, `LISTA:`, `TEXTO:`, `FOTO:`, `FRASE:` o `CIERRE:`. Ejemplo completo en `propiedades/ejemplo-carrusel/guion.txt` y en la pestaña "Carrusel por guion" de la app.
+
+## Copy por red
+Cada pieza sale con `copy-instagram.txt`, `copy-tiktok.txt` y `copy-facebook.txt`, cada uno con 5 hashtags de nicho según la operación (venta, alquiler, alquiler temporal), el tipo y la zona.
+
 ## Generador de reels
 ```bash
 node generate.mjs propiedades/<carpeta>            # carrusel + story + reel animado + caption
 node generate.mjs propiedades/<carpeta> --frame    # lotes: fotograma 9:16 con grilla y zonas prohibidas en rojo
 ```
 La carpeta lleva `propiedad.json` + `fotos/` y/o `video.mp4` (y opcional `musica.mp3`). Salida en `propiedades/<carpeta>/salida/`:
-`post-01-portada.png`, `post-NN-foto.png` (1080×1350), `story-portada.png` = `reel-portada.png` (1080×1920), `reel.mp4`, `caption.txt`.
+`post-01-portada.png`, `post-NN-foto.png` (1080×1350), `story-portada.png` = `reel-portada.png` (1080×1920), `reel.mp4`, `copy-instagram.txt`, `copy-tiktok.txt`, `copy-facebook.txt`.
 Ejemplos: `propiedades/ejemplo-cap-cana` (villa con fotos) y `propiedades/ejemplo-lote-drone` (lote con video de drone y polígono animado).
 
 Datos fijos de la oficina en `oficina.json`. Logos oficiales (KEYMEX Caribe rojo/blanco y sello CONFOTUR) en `assets/`. El WhatsApp del agente se pide en cada pieza.

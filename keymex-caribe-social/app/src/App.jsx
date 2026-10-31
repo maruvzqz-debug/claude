@@ -2,12 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 import Ficha from "./templates/Ficha.jsx";
-import Lote from "./templates/Lote.jsx";
+import Lote, { convertPoint } from "./templates/Lote.jsx";
 import { Hook, Pasos, Social, FotoSlide, Destacada } from "./templates/Otras.jsx";
 import { BRAND } from "./templates/common.jsx";
 import { Icon, AMENIDADES, ICON_NAMES } from "./components/Icons.jsx";
-import { FORMATS, SAFE, slugify } from "./lib/format.js";
-import { captionPropiedad, captionGenerica, SEGMENTOS } from "./lib/caption.js";
+import { FORMATS, SAFE, slugify, OPERACIONES, PERIODOS } from "./lib/format.js";
+import { captionPropiedad, captionGenerica, captionCarrusel, SEGMENTOS, REDES, hashtagsNicho } from "./lib/caption.js";
+import { parseCarrusel, EJEMPLO_CARRUSEL, TIPOS } from "./lib/carrusel.js";
+import CarruselSlide from "./templates/Carrusel.jsx";
 import { validate, checkContrast } from "./lib/validate.js";
 import { nodeToPng, dataUrlToBytes, zipAndDownload } from "./lib/exporter.js";
 import { parseCSV, sampleCSV } from "./lib/csv.js";
@@ -21,13 +23,13 @@ const LS = {
 };
 
 const TABS = [
-  ["propiedad", "Ficha / Lote"], ["hook", "Hook"], ["pasos", "Educativo"], ["social", "Prueba social"],
+  ["propiedad", "Ficha / Lote"], ["carrusel", "Carrusel por guion"], ["hook", "Hook"], ["pasos", "Educativo"], ["social", "Prueba social"],
   ["destacadas", "Destacadas"], ["masiva", "Carga masiva"], ["oficina", "Oficina y marca"],
 ];
 
 /* ---------------- campos ---------------- */
 function F({ label, value, onChange, type = "text", placeholder, area, ...rest }) {
-  const id = "f-" + label.toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-");
+  const id = "f-" + label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/-$/, "");
   return (
     <label className="f" htmlFor={id}>{label}
       {area
@@ -37,7 +39,7 @@ function F({ label, value, onChange, type = "text", placeholder, area, ...rest }
   );
 }
 function Sel({ label, value, onChange, options }) {
-  const id = "s-" + label.toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-");
+  const id = "s-" + label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/-$/, "");
   return (
     <label className="f" htmlFor={id}>{label}
       <select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
@@ -138,17 +140,27 @@ function slidesFor(kind, d, office, fmt) {
     fotos.slice(1, 10).forEach((src, i) => s.push({ name: `${String(i + 2).padStart(2, "0")}-foto`, el: <FotoSlide src={src} fmt={fmt} /> }));
     return s;
   }
+  if (kind === "carrusel") {
+    const { slides } = parseCarrusel(d.guion);
+    let paso = 0;
+    return slides.map((s, i) => {
+      const pasoN = s.tipo === "PASO" ? ++paso : 0;
+      return { name: `${String(i + 1).padStart(2, "0")}-${s.tipo.toLowerCase()}`, el: <CarruselSlide s={s} i={i} n={slides.length} d={d} office={office} fotos={fotos} pasoN={pasoN} /> };
+    });
+  }
   if (kind === "hook") return [{ name: "01-hook", el: <Hook d={d} office={office} fmt={fmt} /> }];
   if (kind === "pasos") return [{ name: "01-pasos", el: <Pasos d={d} office={office} fmt={fmt} /> }];
   if (kind === "social") return [{ name: "01-prueba-social", el: <Social d={d} office={office} fmt={fmt} /> }];
   return [];
 }
 function storyFor(kind, d, office) {
+  if (kind === "carrusel") return null;
   const s = slidesFor(kind, d, office, "story");
   return s.length ? { name: "story-" + s[0].name.slice(3), el: s[0].el } : null;
 }
-function captionFor(kind, d, office) {
-  return kind === "propiedad" ? captionPropiedad(d, office) : captionGenerica(kind, d, office);
+function captionFor(kind, d, office, red = "instagram") {
+  if (kind === "carrusel") return captionCarrusel(parseCarrusel(d.guion).slides, d, office, red);
+  return kind === "propiedad" ? captionPropiedad(d, office, red) : captionGenerica(kind, d, office, red);
 }
 function nameFor(kind, d) {
   return slugify([kind === "propiedad" ? d.tipo : kind, d.proyecto || d.zona || d.titulo || d.pregunta].filter(Boolean).join(" "));
@@ -190,30 +202,48 @@ export default function App() {
   }, [office.chantal]);
 
   const kind = tab;
-  const isPiece = ["propiedad", "hook", "pasos", "social"].includes(kind);
+  const isPiece = ["propiedad", "carrusel", "hook", "pasos", "social"].includes(kind);
+  const vfmt = kind === "carrusel" ? "feed" : fmt; // el carrusel es siempre 4:5
   const raw = docs[kind] || {};
   const d = useMemo(() => ({ ...raw, agente, fotos: (raw.fotos || []).map((f) => f.url) }), [raw, agente]);
   const set = (patch) => setDocs((all) => ({ ...all, [kind]: { ...all[kind], ...patch } }));
   const setIn = (key, patch) => set({ [key]: { ...(raw[key] || {}), ...patch } });
 
+  const parsed = kind === "carrusel" ? parseCarrusel(d.guion) : null;
   const { errors, warnings } = isPiece ? validate(kind, d) : { errors: [], warnings: [] };
+  if (parsed) { errors.push(...parsed.errors); warnings.push(...parsed.warnings); }
   const [contrast, setContrast] = useState([]);
   useEffect(() => {
     let alive = true;
     const tpl = kind === "propiedad" ? (d.tipo === "lote" ? "lote" : "ficha") : kind;
-    checkContrast(tpl, d.variante, fmt, d.fotos[0]).then((w) => alive && setContrast(w));
+    checkContrast(tpl, d.variante, vfmt, d.fotos[0]).then((w) => alive && setContrast(w));
     return () => { alive = false; };
-  }, [kind, d.tipo, d.variante, fmt, d.fotos[0]]);
+  }, [kind, d.tipo, d.variante, vfmt, d.fotos[0]]);
 
+  const [red, setRed] = useState("instagram");
   const [capOverride, setCapOverride] = useState({});
-  const autoCaption = isPiece ? captionFor(kind, d, office) : "";
-  const caption = capOverride[kind] ?? autoCaption;
+  const ck = `${kind}.${red}`;
+  const autoCaption = isPiece ? captionFor(kind, d, office, red) : "";
+  const caption = capOverride[ck] ?? autoCaption;
+  const LIMITE = { instagram: [2200, 1200], tiktok: [4000, 300], facebook: [63206, 1500] }[red]; // [máximo, recomendado]
 
   const [editPoly, setEditPoly] = useState(false);
+  // Tamaño real de la foto de portada: sirve para reubicar el polígono del lote entre formatos
+  const [portadaDims, setPortadaDims] = useState(null);
+  useEffect(() => {
+    const src = d.fotos[0]; if (!src) { setPortadaDims(null); return; }
+    const im = new Image(); im.onload = () => setPortadaDims({ iw: im.naturalWidth, ih: im.naturalHeight }); im.src = src;
+  }, [d.fotos[0]]);
+  const addPolyPoint = (p) => {
+    const L = raw.lote || {};
+    const base = L.base?.iw ? L.base : portadaDims ? { fmt: vfmt, ...portadaDims } : { fmt: vfmt };
+    const pt = base.iw && base.fmt !== vfmt ? convertPoint(p, FORMATS[vfmt], FORMATS[base.fmt], base.iw, base.ih) : p;
+    setIn("lote", { poligono: [...(L.poligono || []), pt.map((x) => +x.toFixed(4))], base });
+  };
   const refs = useRef({});
   const storyRef = useRef();
 
-  const slides = isPiece ? slidesFor(kind, d, office, fmt) : [];
+  const slides = isPiece ? slidesFor(kind, d, office, vfmt) : [];
   const story = isPiece ? storyFor(kind, d, office) : null;
 
   async function exportZip() {
@@ -222,22 +252,24 @@ export default function App() {
     try {
       const base = nameFor(kind, d);
       const files = [];
-      for (const s of slides) files.push([`${base}/${s.name}-${FORMATS[fmt].w}x${FORMATS[fmt].h}.png`, dataUrlToBytes(await nodeToPng(refs.current[s.name]))]);
+      for (const s of slides) files.push([`${base}/${s.name}-${FORMATS[vfmt].w}x${FORMATS[vfmt].h}.png`, dataUrlToBytes(await nodeToPng(refs.current[s.name]))]);
       if (story && storyRef.current) files.push([`${base}/${story.name}-1080x1920.png`, dataUrlToBytes(await nodeToPng(storyRef.current))]);
-      files.push([`${base}/caption.txt`, caption]);
+      // Copy optimizado para cada red (respeta lo editado a mano)
+      for (const r of Object.keys(REDES)) files.push([`${base}/copy-${r}.txt`, capOverride[`${kind}.${r}`] ?? captionFor(kind, d, office, r)]);
+      if (kind === "carrusel") files.push([`${base}/guion.txt`, d.guion || ""]);
       // datos.json: lo que necesita el generador de reels (node generate.mjs) para hacer el reel de esta pieza
       if (kind === "propiedad") {
         const { fotos, ...rest } = raw;
         files.push([`${base}/datos.json`, JSON.stringify({ ...rest, agente, fotos: (raw.fotos || []).map((f) => "fotos/" + f.name) }, null, 2)]);
       }
       await zipAndDownload(files, `${base}.zip`, saveFile);
-      setToast(`Exportado: ${files.length - 1} imágenes + caption`);
+      setToast(`Exportado: ${slides.length + (story ? 1 : 0)} imágenes + copy para ${Object.keys(REDES).length} redes`);
     } catch (e) { console.error(e); setToast("No se pudo exportar: " + e.message); }
     setBusy(false);
   }
 
   async function copyCaption() {
-    try { await navigator.clipboard.writeText(caption); setToast("Caption copiada"); }
+    try { await navigator.clipboard.writeText(caption); setToast(`Copy de ${REDES[red]} copiado`); }
     catch { document.getElementById("caption-ta")?.select(); setToast("Selecciona y copia con Ctrl/Cmd + C"); }
   }
 
@@ -262,26 +294,27 @@ export default function App() {
               <F label="Email del agente (opcional)" value={agente.email} onChange={(v) => setAgente({ ...agente, email: v })} />
             </div>
             {kind === "propiedad" && <PropiedadForm d={raw} set={set} setIn={setIn} editPoly={editPoly} setEditPoly={setEditPoly} />}
+            {kind === "carrusel" && <CarruselForm d={raw} set={set} />}
             {kind === "hook" && <HookForm d={raw} set={set} />}
             {kind === "pasos" && <PasosForm d={raw} set={set} />}
             {kind === "social" && <SocialForm d={raw} set={set} />}
             <div className="group">
               <h3>Fotos</h3>
               <Photos fotos={raw.fotos || []} setFotos={(f) => set({ fotos: f })}
-                max={kind === "social" ? 5 : kind === "propiedad" ? 10 : 1}
-                hint={kind === "propiedad" ? "La 1ª es la portada; las demás salen como slides limpias con el logo." : kind === "social" ? "De 3 a 5 fotos para el collage." : "Foto de fondo."} />
-              {kind !== "social" ? <Sel label="Encuadre de la portada" value={raw.foto_pos || "center"} onChange={(v) => set({ foto_pos: v })} options={{ center: "Centro", top: "Arriba", bottom: "Abajo", left: "Izquierda", right: "Derecha" }} /> : null}
+                max={kind === "social" ? 5 : kind === "propiedad" || kind === "carrusel" ? 10 : 1}
+                hint={kind === "propiedad" ? "La 1ª es la portada; las demás salen como slides limpias con el logo." : kind === "carrusel" ? "Numeradas en este orden: en el guion usá FOTO: 1, FOTO: 2…" : kind === "social" ? "De 3 a 5 fotos para el collage." : "Foto de fondo."} />
+              {kind !== "social" && kind !== "carrusel" ? <Sel label="Encuadre de la portada" value={raw.foto_pos || "center"} onChange={(v) => set({ foto_pos: v })} options={{ center: "Centro", top: "Arriba", bottom: "Abajo", left: "Izquierda", right: "Derecha" }} /> : null}
             </div>
           </section>
 
           <section className="stage">
             <div className="panel stage-bar">
               <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-                <Seg value={fmt} onChange={setFmt} options={{ feed: "Feed 4:5", story: "Story / Reel 9:16", square: "1:1" }} />
+                {kind === "carrusel" ? <span className="hint">Carrusel de feed 4:5 · {slides.length}/10 slides</span> : <Seg value={fmt} onChange={setFmt} options={{ feed: "Feed 4:5", story: "Story / Reel 9:16", square: "1:1" }} />}
                 <label className="chk" htmlFor="chk-guides"><input id="chk-guides" type="checkbox" checked={guides} onChange={(e) => setGuides(e.target.checked)} /> Zonas seguras IG + TikTok</label>
               </div>
               <button className="btn primary" type="button" disabled={busy || errors.length > 0} onClick={exportZip}>
-                {busy ? "Exportando…" : `Exportar ZIP (${slides.length + (story ? 1 : 0)} PNG + caption)`}
+                {busy ? "Exportando…" : `Exportar ZIP (${slides.length + (story ? 1 : 0)} PNG + copy)`}
               </button>
             </div>
             <div className="panel status" aria-live="polite">
@@ -294,29 +327,39 @@ export default function App() {
               {slides.map((s, i) => (
                 <div className="thumb" key={s.name}>
                   <div className="lbl">{s.name.replace(/^\d+-/, `${i + 1} · `)}</div>
-                  <Scaled fmt={fmt} guides={guides} width={i === 0 ? 340 : 220} nodeRef={(n) => (refs.current[s.name] = n?.firstChild)}
-                    onPoint={i === 0 && editPoly && kind === "propiedad" ? (p) => setIn("lote", { poligono: [...(raw.lote?.poligono || []), p.map((x) => +x.toFixed(4))] }) : null}>
+                  <Scaled fmt={vfmt} guides={guides} width={i === 0 ? 340 : 220} nodeRef={(n) => (refs.current[s.name] = n?.firstChild)}
+                    onPoint={i === 0 && editPoly && kind === "propiedad" ? addPolyPoint : null}>
                     {s.el}
                   </Scaled>
                 </div>
               ))}
-              {story && fmt !== "story" ? (
+              {story && vfmt !== "story" ? (
                 <div className="thumb">
                   <div className="lbl">Story 9:16</div>
                   <Scaled fmt="story" guides={guides} width={190} nodeRef={(n) => (storyRef.current = n?.firstChild)}>{story.el}</Scaled>
                 </div>
               ) : null}
             </div>
-            {story && fmt === "story" ? <div className="offscreen"><div ref={(n) => (storyRef.current = n?.firstChild)}>{story.el}</div></div> : null}
+            {story && vfmt === "story" ? <div className="offscreen"><div ref={(n) => (storyRef.current = n?.firstChild)}>{story.el}</div></div> : null}
             <div className="panel caption-box group">
               <div className="stage-bar">
-                <h3 style={{ margin: 0, font: "700 11px var(--f-head)", letterSpacing: ".18em", textTransform: "uppercase", color: "var(--muted)" }}>Caption</h3>
+                <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                  <h3 style={{ margin: 0, font: "700 11px var(--f-head)", letterSpacing: ".18em", textTransform: "uppercase", color: "var(--muted)" }}>Copy para</h3>
+                  <Seg value={red} onChange={setRed} options={REDES} />
+                </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  {capOverride[kind] != null ? <button className="btn sm" type="button" onClick={() => setCapOverride({ ...capOverride, [kind]: undefined })}>Regenerar</button> : null}
+                  {capOverride[ck] != null ? <button className="btn sm" type="button" onClick={() => setCapOverride({ ...capOverride, [ck]: undefined })}>Regenerar</button> : null}
                   <button className="btn sm" type="button" onClick={copyCaption}>Copiar</button>
                 </div>
               </div>
-              <textarea id="caption-ta" value={caption} onChange={(e) => setCapOverride({ ...capOverride, [kind]: e.target.value })} />
+              <p className="hint">
+                {red === "instagram" ? "Gancho en la 1ª línea (se ve antes del “más”), ficha con emojis, CTA a WhatsApp y 5 hashtags de nicho." : red === "tiktok" ? "Corto y directo: gancho, datos en una línea, WhatsApp y 5 hashtags. TikTok premia textos breves." : "Descriptivo y ordenado, pocas emojis, CTA a WhatsApp o Messenger y 5 hashtags."}
+                {" "}Hashtags según la operación: {hashtagsNicho(d, kind === "propiedad" ? "propiedad" : kind).join(" ")}
+              </p>
+              <textarea id="caption-ta" value={caption} onChange={(e) => setCapOverride({ ...capOverride, [ck]: e.target.value })} />
+              <p className="hint" style={{ textAlign: "right", color: caption.length > LIMITE[0] ? "var(--err)" : caption.length > LIMITE[1] ? "var(--warn)" : undefined }}>
+                {caption.length} caracteres · recomendado ≤ {LIMITE[1]} · máximo {LIMITE[0]}
+              </p>
             </div>
           </section>
         </main>
@@ -350,7 +393,7 @@ function PropiedadForm({ d, set, setIn, editPoly, setEditPoly }) {
         <h3>Propiedad</h3>
         <div className="row">
           <Sel label="Tipo" value={d.tipo} onChange={(v) => set({ tipo: v })} options={{ villa: "Villa", apartamento: "Apartamento", casa: "Casa", adosado: "Adosado", penthouse: "Penthouse", lote: "Lote / terreno" }} />
-          <Sel label="Operación" value={d.operacion || "venta"} onChange={(v) => set({ operacion: v })} options={{ venta: "Venta", alquiler: "Alquiler" }} />
+          <Sel label="Operación" value={d.operacion || "venta"} onChange={(v) => set({ operacion: v, precio_periodo: v === "temporal" ? "noche" : v === "alquiler" ? "mes" : "" })} options={OPERACIONES} />
           {d.tipo !== "lote" ? <Sel label="Variante" value={d.variante || "clara"} onChange={(v) => set({ variante: v })} options={{ clara: "Clara", oscura: "Oscura" }} /> : null}
         </div>
         <Comunes d={d} set={set} />
@@ -377,8 +420,15 @@ function PropiedadForm({ d, set, setIn, editPoly, setEditPoly }) {
         <div className="row">
           <Sel label="Moneda" value={d.moneda || "USD"} onChange={(v) => set({ moneda: v })} options={{ USD: "US$", "RD$": "RD$" }} />
           <F label="Precio" value={d.precio} onChange={(v) => set({ precio: v })} inputMode="numeric" />
+          {d.operacion === "alquiler" || d.operacion === "temporal" ? <Sel label="Por" value={d.precio_periodo || (d.operacion === "temporal" ? "noche" : "mes")} onChange={(v) => set({ precio_periodo: v })} options={PERIODOS} /> : null}
           <label className="chk" style={{ alignSelf: "end", paddingBottom: 8 }}><input type="checkbox" checked={!!d.precio_desde} onChange={(e) => set({ precio_desde: e.target.checked })} /> “Desde”</label>
         </div>
+        {d.operacion === "temporal" ? (
+          <div className="row">
+            <F label="Huéspedes máx." value={d.huespedes} onChange={(v) => set({ huespedes: v })} inputMode="numeric" />
+            <F label="Mínimo de noches" value={d.min_noches} onChange={(v) => set({ min_noches: v })} inputMode="numeric" />
+          </div>
+        ) : null}
         <div className="row">
           <F label="m² solar" value={d.m2_solar} onChange={(v) => set({ m2_solar: v })} />
           {d.tipo !== "lote" ? <F label="m² construcción" value={d.m2_construccion} onChange={(v) => set({ m2_construccion: v })} /> : null}
@@ -397,7 +447,7 @@ function PropiedadForm({ d, set, setIn, editPoly, setEditPoly }) {
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button className={`btn ${editPoly ? "primary" : ""}`} type="button" onClick={() => setEditPoly(!editPoly)}>{editPoly ? "Terminar polígono" : "Marcar polígono en la foto"}</button>
             <button className="btn" type="button" onClick={() => setIn("lote", { poligono: pts.slice(0, -1) })} disabled={!pts.length}>Deshacer punto</button>
-            <button className="btn" type="button" onClick={() => setIn("lote", { poligono: [], medidas: [] })} disabled={!pts.length}>Limpiar</button>
+            <button className="btn" type="button" onClick={() => setIn("lote", { poligono: [], medidas: [], base: null })} disabled={!pts.length}>Limpiar</button>
           </div>
           {pts.length >= 2 ? (
             <div className="row">
@@ -428,6 +478,45 @@ function PropiedadForm({ d, set, setIn, editPoly, setEditPoly }) {
         <F label="Frase de cierre" value={d.cierre_caption} onChange={(v) => set({ cierre_caption: v })} />
       </div>
     </>
+  );
+}
+
+function CarruselForm({ d, set }) {
+  const { slides, errors } = parseCarrusel(d.guion);
+  return (
+    <div className="group">
+      <h3>Carrusel por guion (1 a 10 slides)</h3>
+      <Comunes d={d} set={set} />
+      <div className="row">
+        <Sel label="Operación (para hashtags)" value={d.operacion || "venta"} onChange={(v) => set({ operacion: v })} options={OPERACIONES} />
+        <Sel label="Tipo" value={d.tipo || "villa"} onChange={(v) => set({ tipo: v })} options={{ villa: "Villa", apartamento: "Apartamento", casa: "Casa", adosado: "Adosado", penthouse: "Penthouse", lote: "Lote" }} />
+        <F label="Zona" value={d.zona} onChange={(v) => set({ zona: v })} />
+      </div>
+      <label className="f" htmlFor="guion">Guion
+        <textarea id="guion" value={d.guion || ""} onChange={(e) => set({ guion: e.target.value })} rows={18} spellCheck={false}
+          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 13, lineHeight: 1.5 }} />
+      </label>
+      <p className="hint">{slides.length} slide(s) detectada(s){errors.length ? ` · ${errors.length} error(es) en el guion` : ""}: {slides.map((s) => s.tipo.toLowerCase()).join(" → ")}</p>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button className="btn" type="button" onClick={() => set({ guion: EJEMPLO_CARRUSEL })}>Insertar ejemplo</button>
+        <button className="btn" type="button" onClick={() => set({ guion: "" })}>Vaciar</button>
+      </div>
+      <details className="hint">
+        <summary style={{ cursor: "pointer", fontWeight: 600 }}>Cómo escribir el guion</summary>
+        <p>Separá cada slide con una línea <code>---</code>. La primera línea de cada bloque dice qué es:</p>
+        <ul style={{ paddingLeft: 18, margin: "6px 0" }}>
+          <li><code>PORTADA:</code> título (lo que va entre <code>*asteriscos*</code> sale en script dorada) · <code>BAJADA:</code> · <code>FOTO: 1</code></li>
+          <li><code>PASO:</code> título · <code>TEXTO:</code> · <code>ICONO:</code> casa, dinero, firma, llave, calendario…</li>
+          <li><code>DATO:</code> cifra grande · <code>TEXTO:</code> qué significa</li>
+          <li><code>LISTA:</code> título y debajo ítems con <code>- </code> (hasta 7)</li>
+          <li><code>TEXTO:</code> título y el párrafo en las líneas de abajo · <code>FOTO:</code> opcional</li>
+          <li><code>FOTO: 3</code> · <code>LEYENDA:</code></li>
+          <li><code>FRASE:</code> frase en script · <code>FOTO:</code> opcional</li>
+          <li><code>CIERRE:</code> llamado a la acción · <code>TEXTO:</code> (si falta, se agrega solo con el contacto)</li>
+        </ul>
+        <p>Tipos válidos: {TIPOS.join(", ")}. Máximo 10 slides.</p>
+      </details>
+    </div>
   );
 }
 
@@ -579,7 +668,7 @@ function BulkTab({ office, setToast }) {
           const png = await nodeToPng(host.firstChild);
           out.push([`${base}/${s.name}${s.name.startsWith("story") ? "-1080x1920" : "-1080x1350"}.png`, dataUrlToBytes(png)]);
         }
-        out.push([`${base}/caption.txt`, captionPropiedad(d, office)]);
+        for (const r of Object.keys(REDES)) out.push([`${base}/copy-${r}.txt`, captionPropiedad(d, office, r)]);
       }
       setProg("Comprimiendo…");
       await zipAndDownload(out, "keymex-caribe-lote.zip", saveFile);

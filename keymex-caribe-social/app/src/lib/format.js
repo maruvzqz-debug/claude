@@ -58,3 +58,26 @@ export const SAFE = {
   vertical: { top: 220, bottom: 480, left: 60, right: 140 },
   feed: { side: 34 },
 };
+
+// ---------- Operación y precio ----------
+export const OPERACIONES = { venta: "Venta", alquiler: "Alquiler", temporal: "Alquiler temporal" };
+export const PERIODOS = { mes: "mes", noche: "noche", semana: "semana" };
+export function periodoDe(d) {
+  if (d.operacion === "venta" || !d.operacion) return "";
+  return d.precio_periodo || (d.operacion === "temporal" ? "noche" : "mes");
+}
+export function precioRotulo(d) {
+  if (d.precio_desde) return "Desde";
+  if (d.operacion === "temporal") return "Alquiler temporal";
+  if (d.operacion === "alquiler") return { mes: "Alquiler mensual", semana: "Alquiler semanal", noche: "Alquiler por noche" }[periodoDe(d)];
+  return "Precio de venta";
+}
+export function precioTexto(d) {
+  const m = fmtMoney(d.precio, d.moneda);
+  if (!m) return "";
+  const p = periodoDe(d);
+  return p ? `${m} / ${p}` : m;
+}
+export function operacionTexto(d) {
+  return d.operacion === "temporal" ? "alquiler temporal" : d.operacion === "alquiler" ? "alquiler" : "venta";
+}
