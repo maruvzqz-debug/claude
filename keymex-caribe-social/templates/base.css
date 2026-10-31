@@ -1,0 +1,42 @@
+/* KEYMEX Caribe — estilos base de plantillas (Manual de Marca 2025) */
+@font-face { font-family: "Montserrat"; font-weight: 300; font-style: normal; src: url("../assets/fonts/montserrat-latin-300-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 300; font-style: italic; src: url("../assets/fonts/montserrat-latin-300-italic.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 400; src: url("../assets/fonts/montserrat-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 500; src: url("../assets/fonts/montserrat-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 600; src: url("../assets/fonts/montserrat-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 700; src: url("../assets/fonts/montserrat-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 800; src: url("../assets/fonts/montserrat-latin-800-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 900; src: url("../assets/fonts/montserrat-latin-900-normal.woff2") format("woff2"); }
+@font-face { font-family: "Poppins"; font-weight: 400; src: url("../assets/fonts/poppins-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Poppins"; font-weight: 500; src: url("../assets/fonts/poppins-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Poppins"; font-weight: 600; src: url("../assets/fonts/poppins-latin-600-normal.woff2") format("woff2"); }
+
+:root {
+  --rojo: #ad1d28;      /* Rojo KEYMEX RGB 173/29/40 */
+  --blanco: #ffffff;
+  --negro: #111111;
+  --gris: #f2f0ed;      /* gris cálido de fondo */
+  --gris-txt: #5c5c5c;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: transparent; }
+body { font-family: "Montserrat", sans-serif; color: var(--negro); -webkit-font-smoothing: antialiased; }
+
+/* ---------- Logo ---------- */
+/* Si existe assets/logo-keymex-blanco.png / logo-keymex-rojo.png se usa el archivo oficial.
+   El wordmark tipográfico es solo un sustituto hasta cargar el logo oficial. */
+.logo { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1; }
+.logo img { display: block; height: 100%; width: auto; }
+.logo .wm { font-weight: 800; letter-spacing: 0.06em; }
+.logo .sub { font-weight: 500; letter-spacing: 0.32em; margin-top: 0.35em; font-size: 0.26em; }
+.logo.blanco { color: var(--blanco); }
+.logo.rojo { color: var(--rojo); }
+
+.tag {
+  display: inline-block; background: var(--rojo); color: var(--blanco);
+  font-family: "Poppins"; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.photo { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.shade-bottom { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.78) 0%, rgba(0,0,0,.35) 38%, rgba(0,0,0,0) 62%); }
+.shade-top { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,.45) 0%, rgba(0,0,0,0) 28%); }
+.caps { text-transform: uppercase; letter-spacing: 0.22em; }
