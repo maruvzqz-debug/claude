@@ -189,6 +189,11 @@ export default function App() {
       for (const s of slides) files.push([`${base}/${s.name}-${FORMATS[fmt].w}x${FORMATS[fmt].h}.png`, dataUrlToBytes(await nodeToPng(refs.current[s.name]))]);
       if (story && storyRef.current) files.push([`${base}/${story.name}-1080x1920.png`, dataUrlToBytes(await nodeToPng(storyRef.current))]);
       files.push([`${base}/caption.txt`, caption]);
+      // datos.json: lo que necesita el generador de reels (node generate.mjs) para hacer el reel de esta pieza
+      if (kind === "propiedad") {
+        const { fotos, ...rest } = raw;
+        files.push([`${base}/datos.json`, JSON.stringify({ ...rest, agente, fotos: (raw.fotos || []).map((f) => "fotos/" + f.name) }, null, 2)]);
+      }
       await zipAndDownload(files, `${base}.zip`, saveFile);
       setToast(`Exportado: ${files.length - 1} imágenes + caption`);
     } catch (e) { console.error(e); setToast("No se pudo exportar: " + e.message); }

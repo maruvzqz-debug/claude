@@ -1,0 +1,48 @@
+{
+  "tipo": "lote",
+  "operacion": "venta",
+  "titulo": "Terreno en venta",
+  "proyecto": "Residencial de ejemplo",
+  "zona": "Playa Nueva Romana",
+  "ciudad": "La Romana",
+  "hook_reel": "Hay algo que casi nadie está *mirando*…",
+  "moneda": "USD",
+  "precio": 185000,
+  "m2_solar": 639.99,
+  "habitaciones": 4,
+  "confotur": true,
+  "segmento": "sur",
+  "lote": {
+    "uso": "Vivienda unifamiliar",
+    "niveles": 2,
+    "medidas": [
+      "28.29 m",
+      "15.08 m",
+      "28.30 m",
+      "15.10 m"
+    ],
+    "t_freeze": 6,
+    "poligono_reel": [
+      [
+        0.6,
+        0.575
+      ],
+      [
+        0.9,
+        0.575
+      ],
+      [
+        0.9,
+        0.76
+      ],
+      [
+        0.6,
+        0.76
+      ]
+    ]
+  },
+  "agente": {
+    "nombre": "Agente de ejemplo",
+    "whatsapp": "+1 809 000 0000"
+  }
+}

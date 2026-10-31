@@ -1,17 +1,13 @@
 {
   "link": "https://ejemplo.com/propiedad/villa-cap-cana",
   "operacion": "VENTA",
-  "etiqueta": "Nuevo ingreso",
-  "tipo": "Villa",
-  "titulo": "Villa frente al mar en Cap Cana",
-  "subtitulo": "Arquitectura tropical, vista abierta al Caribe",
+  "tipo": "villa",
+  "titulo": "Villa frente al mar",
   "zona": "Cap Cana",
   "ciudad": "Punta Cana",
-  "pais": "República Dominicana",
-  "precio": "USD 1,250,000",
+  "precio": 1250000,
   "habitaciones": 4,
   "banos": 4.5,
-  "m2_construidos": 450,
   "m2_terreno": 900,
   "parqueos": 2,
   "destacados": [
@@ -22,14 +18,27 @@
     "Entrega amueblada"
   ],
   "frase_lifestyle": "Despierta cada mañana con el Caribe a tus pies.",
-  "descripcion": "Una villa pensada para vivir el Caribe sin filtros: espacios abiertos, luz natural todo el día y una piscina infinita que se funde con el horizonte.",
-  "hook_reel": "¿Te imaginas vivir aquí?",
+  "hook_reel": "¿Te imaginas vivir *aquí*?",
   "cta_titulo": "Agenda tu visita privada",
-  "cta_texto": "Escríbenos por WhatsApp y recibe la ficha completa.",
   "agente": {
-    "nombre": "KEYMEX Caribe",
-    "telefono": "+1 809 000 0000"
+    "nombre": "Agente de ejemplo",
+    "whatsapp": "+1 809 000 0000"
   },
-  "instagram": "@keymexcaribe",
-  "confotur": true
+  "confotur": true,
+  "palabra_acento": "mar",
+  "proyecto": "Proyecto de ejemplo",
+  "moneda": "USD",
+  "m2_solar": 900,
+  "m2_construccion": 450,
+  "amenidades": [
+    "piscina",
+    "vista_mar",
+    "playa",
+    "terraza",
+    "bbq",
+    "seguridad"
+  ],
+  "frase_script": "Despierta con el Caribe a tus pies",
+  "segmento": "inversor",
+  "bajada": "Arquitectura tropical con vista abierta al Caribe."
 }

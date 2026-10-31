@@ -11,6 +11,22 @@ Pasale a Claude **el link de una propiedad o un video** y devuelve:
 
 ## Uso manual
 ```bash
+cd app && npm install && npm run build && cd ..   # una vez: el motor usa las plantillas de la app
+node generate.mjs propiedades/<carpeta>            # carrusel + story + reel animado + caption
+node generate.mjs propiedades/<carpeta> --frame    # lotes: fotograma 9:16 con grilla para marcar el polígono
+```
+La carpeta lleva `propiedad.json` + `fotos/` y/o `video.mp4` (y opcional `musica.mp3`). Resultado en `propiedades/<carpeta>/salida/`.
+Ejemplos: `propiedades/ejemplo-cap-cana` (villa con fotos) y `propiedades/ejemplo-lote-drone` (lote con video de drone y polígono animado).
+Datos fijos de la oficina en `oficina.json`. Logos oficiales en `assets/`.
+
+---|---|
+| `post-01…05.png` | Carrusel 1080×1350 (portada · ficha · galería + destacados · lifestyle · CTA) |
+| `reel.mp4` | Reel 1080×1920, ~18 s: gancho → datos → precio → placa roja de cierre |
+| `reel-portada.jpg` | Portada del reel |
+| `caption.txt` | Caption con ficha, CTA y hashtags |
+
+## Uso manual
+```bash
 node generate.mjs propiedades/<carpeta>
 ```
 La carpeta lleva `propiedad.json` + `fotos/` y/o `video.mp4` (y opcional `musica.mp3`). Resultado en `propiedades/<carpeta>/salida/`.

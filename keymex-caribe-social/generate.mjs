@@ -1,7 +1,12 @@
 #!/usr/bin/env node
-// KEYMEX Caribe — Generador de Post (carrusel) + Reel a partir de una propiedad.
-// Uso:  node generate.mjs propiedades/<carpeta>
-// La carpeta debe tener propiedad.json y fotos/ (jpg/png/webp) y/o video.mp4 (opcional) y musica.mp3 (opcional).
+// KEYMEX Caribe — Propiedad → Carrusel + Story + Reel animado + Caption.
+// Usa las MISMAS plantillas que KEYMEX Caribe Studio (app/dist/index.html en modo render).
+//
+//   node generate.mjs propiedades/<carpeta>            genera todo
+//   node generate.mjs propiedades/<carpeta> --frame    solo guarda salida/marcar-poligono.jpg
+//                                                      (fotograma 9:16 con grilla para ubicar el polígono del lote)
+//
+// La carpeta lleva propiedad.json + fotos/ y/o video.mp4 (+ musica.mp3 opcional).
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
@@ -12,175 +17,161 @@ const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 
 const ROOT = path.dirname(new URL(import.meta.url).pathname);
+const APP = path.join(ROOT, "app", "dist", "index.html");
 const dir = path.resolve(process.argv[2] || "");
-if (!process.argv[2] || !fs.existsSync(path.join(dir, "propiedad.json"))) {
-  console.error("Uso: node generate.mjs propiedades/<carpeta>   (requiere propiedad.json)");
-  process.exit(1);
-}
-const data = JSON.parse(fs.readFileSync(path.join(dir, "propiedad.json"), "utf8"));
-const out = path.join(dir, "salida");
-const tmp = path.join(out, ".tmp");
-fs.rmSync(out, { recursive: true, force: true });
-fs.mkdirSync(tmp, { recursive: true });
+const ONLY_FRAME = process.argv.includes("--frame");
+const die = (m) => { console.error("✗ " + m); process.exit(1); };
+if (!process.argv[2] || !fs.existsSync(path.join(dir, "propiedad.json"))) die("Uso: node generate.mjs propiedades/<carpeta> [--frame]");
+if (!fs.existsSync(APP)) die("Falta compilar la app: cd app && npm install && npm run build");
 
-const FPS = 30;
-const ff = (args) => execFileSync("ffmpeg", ["-y", "-loglevel", "error", ...args], { stdio: "inherit" });
-const ffprobeDur = (f) => parseFloat(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f]).toString());
-
-// ---------- Fotos ----------
-const videoPath = data.video ? path.join(dir, data.video) : fs.existsSync(path.join(dir, "video.mp4")) ? path.join(dir, "video.mp4") : null;
-let fotos = (data.fotos && data.fotos.length ? data.fotos : (fs.existsSync(path.join(dir, "fotos")) ? fs.readdirSync(path.join(dir, "fotos")).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort().map((f) => "fotos/" + f) : []))
-  .map((f) => path.join(dir, f));
-
-if (!fotos.length && videoPath) {
-  // Sin fotos: extraemos fotogramas del video para el carrusel.
-  const dur = ffprobeDur(videoPath);
-  fotos = [];
-  for (let i = 0; i < 6; i++) {
-    const t = ((i + 0.5) * dur) / 6;
-    const f = path.join(tmp, `frame-${i}.jpg`);
-    ff(["-ss", t.toFixed(2), "-i", videoPath, "-frames:v", "1", "-q:v", "2", f]);
-    fotos.push(f);
-  }
-}
-if (!fotos.length) { console.error("No hay fotos ni video en la carpeta."); process.exit(1); }
-
-// Logos oficiales (si están cargados en assets/)
-const logo = (n) => { const p = path.join(ROOT, "assets", n); return fs.existsSync(p) ? pathToFileURL(p).href : null; };
-const pageData = {
-  ...data,
-  fotos: fotos.map((f) => pathToFileURL(f).href),
-  __logos: { blanco: logo("logo-keymex-blanco.png"), rojo: logo("logo-keymex-rojo.png"), confotur: logo("sello-confotur.png") },
-};
-
-// ---------- Escenas del reel ----------
-const zona = [data.zona, data.ciudad].filter(Boolean).join(", ");
-const facts = [];
-if (data.habitaciones) facts.push({ sub: "Habitaciones", text: `${data.habitaciones} habitaciones` });
-if (data.banos) facts.push({ sub: "Baños", text: `${data.banos} baños` });
-if (data.m2_construidos) facts.push({ sub: "Superficie", text: `${data.m2_construidos} m² construidos` });
-for (const x of (data.destacados || [])) facts.push({ sub: "Destacado", text: x });
-const reelFacts = facts.slice(0, Math.max(1, Math.min(facts.length, data.reel_max_datos || 5)));
-const a = data.agente || {};
-const scenes = [
-  { type: "hook", tag: data.etiqueta || "En venta", text: data.hook_reel || data.titulo, sub: zona },
-  ...reelFacts.map((f) => ({ type: "fact", ...f })),
-  { type: "price", text: data.precio || "Consultar precio", sub: zona, extra: [data.tipo, data.habitaciones && `${data.habitaciones} hab`, data.m2_construidos && `${data.m2_construidos} m²`].filter(Boolean).join(" · ") },
-  { type: "end", text: data.cta_titulo || "Agenda tu visita privada", sub: data.cta_reel || "Escríbenos por WhatsApp", name: a.nombre || "KEYMEX Caribe", phone: a.telefono || "", ig: data.instagram || "" },
-];
-pageData.__scenes = scenes;
-
-// ---------- Render HTML -> PNG ----------
-const browser = await chromium.launch();
-async function renderAll(template, w, h, selector, prefix, transparent) {
-  const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
-  await page.addInitScript((d) => { window.__DATA__ = d; }, pageData);
-  await page.goto(pathToFileURL(path.join(ROOT, "templates", template)).href);
-  await page.evaluate(() => document.fonts.ready);
-  await page.waitForLoadState("networkidle");
-  const els = await page.$$(selector);
-  const files = [];
-  for (let i = 0; i < els.length; i++) {
-    const f = path.join(prefix.dir, `${prefix.name}-${String(i + 1).padStart(2, "0")}.png`);
-    await els[i].screenshot({ path: f, omitBackground: transparent });
-    files.push(f);
-  }
-  await page.close();
-  return files;
-}
-const slides = await renderAll("post.html", 1080, 1350, ".slide", { dir: out, name: "post" }, false);
-const overlays = await renderAll("reel.html", 1080, 1920, ".scene", { dir: tmp, name: "ov" }, true);
-await browser.close();
-console.log(`✓ Carrusel: ${slides.length} slides 1080x1350`);
-
-// ---------- Reel ----------
-const reel = path.join(out, "reel.mp4");
-const endOv = overlays[overlays.length - 1];
-const musica = fs.existsSync(path.join(dir, "musica.mp3")) ? path.join(dir, "musica.mp3") : null;
-const clips = [];
-
-// Clip de cierre (placa roja 3s con zoom suave del logo/textos)
-const endClip = path.join(tmp, "end.mp4");
-ff(["-loop", "1", "-t", "3", "-i", endOv, "-vf", `scale=1080:1920,format=yuv420p,fps=${FPS}`, "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", endClip]);
-
-if (videoPath) {
-  // MODO VIDEO: recorte 9:16, máximo N segundos, overlays por tramos.
-  const maxDur = data.reel_duracion || 24;
-  const dur = Math.min(ffprobeDur(videoPath), maxDur);
-  const ovs = overlays.slice(0, -1);
-  const seg = dur / ovs.length;
-  const inputs = ["-ss", "0", "-t", dur.toFixed(2), "-i", videoPath];
-  ovs.forEach((o) => inputs.push("-i", o));
-  let fc = `[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=${FPS},setsar=1[v0]`;
-  ovs.forEach((_, i) => {
-    const s = (i * seg).toFixed(2), e = ((i + 1) * seg).toFixed(2);
-    fc += `;[v${i}][${i + 1}:v]overlay=0:0:enable='between(t,${s},${e})'[v${i + 1}]`;
-  });
-  const body = path.join(tmp, "body.mp4");
-  ff([...inputs, "-filter_complex", fc, "-map", `[v${ovs.length}]`, "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p", body]);
-  clips.push(body);
-} else {
-  // MODO FOTOS: Ken Burns por foto + overlay de cada escena.
-  const ovs = overlays.slice(0, -1);
-  const per = data.reel_seg_por_escena || 2.6;
-  const frames = Math.round(per * FPS);
-  ovs.forEach((o, i) => {
-    const foto = fotos[i % fotos.length];
-    const zin = i % 2 === 0;
-    const z = zin ? `min(1+0.10*on/${frames},1.10)` : `max(1.10-0.10*on/${frames},1.0)`;
-    const c = path.join(tmp, `c${i}.mp4`);
-    ff(["-loop", "1", "-i", foto, "-i", o, "-filter_complex",
-      `[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840,zoompan=z='${z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1080x1920:fps=${FPS},setsar=1[bg];[bg][1:v]overlay=0:0,format=yuv420p[v]`,
-      "-map", "[v]", "-frames:v", String(frames), "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", c]);
-    clips.push(c);
-  });
-}
-clips.push(endClip);
-
-// Unión con transiciones (fundido 0.4s)
-const T = 0.4;
-const durs = clips.map(ffprobeDur);
-let fc = "", last = "[0:v]", acc = durs[0];
-for (let i = 1; i < clips.length; i++) {
-  const off = (acc - T).toFixed(3);
-  fc += `${last}[${i}:v]xfade=transition=fade:duration=${T}:offset=${off}[x${i}];`;
-  last = `[x${i}]`; acc = acc - T + durs[i];
-}
-const silent = path.join(tmp, "silent.mp4");
-ff([...clips.flatMap((c) => ["-i", c]), "-filter_complex", fc.replace(/;$/, ""), "-map", last, "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", "-r", String(FPS), "-movflags", "+faststart", silent]);
-
-if (musica) {
-  ff(["-i", silent, "-i", musica, "-filter_complex", `[1:a]afade=t=in:d=0.5,afade=t=out:st=${(acc - 1.5).toFixed(2)}:d=1.5,volume=0.8[a]`, "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", reel]);
-} else if (videoPath && data.reel_audio_original) {
-  ff(["-i", silent, "-i", videoPath, "-map", "0:v", "-map", "1:a?", "-c:v", "copy", "-c:a", "aac", "-shortest", reel]);
-} else {
-  fs.renameSync(silent, reel);
-}
-// Portada del reel (frame del hook)
-ff(["-ss", "1.2", "-i", reel, "-frames:v", "1", "-q:v", "2", path.join(out, "reel-portada.jpg")]);
-console.log(`✓ Reel: ${acc.toFixed(1)}s 1080x1920 ${musica ? "(con música)" : "(sin música — agrega en IG un audio de la biblioteca)"}`);
-
-// ---------- Caption ----------
-const caption = data.caption || defaultCaption(data, zona);
-fs.writeFileSync(path.join(out, "caption.txt"), caption + "\n");
-fs.writeFileSync(path.join(out, "caption-reel.txt"), (data.caption_reel || caption) + "\n");
-console.log("✓ Caption en salida/caption.txt");
+const FPS = 30, T = 0.4; // fundido entre escenas
+const out = path.join(dir, "salida"), tmp = path.join(out, ".tmp");
+fs.mkdirSync(out, { recursive: true });
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log("Listo →", out);
+fs.mkdirSync(tmp, { recursive: true });
+const ff = (args) => execFileSync("ffmpeg", ["-y", "-loglevel", "error", ...args], { stdio: "inherit" });
+const probe = (f, what) => execFileSync("ffprobe", ["-v", "error", ...what, "-of", "csv=p=0", f]).toString().trim();
+const dur = (f) => parseFloat(probe(f, ["-show_entries", "format=duration"]));
+const dims = (f) => probe(f, ["-select_streams", "v:0", "-show_entries", "stream=width,height"]).split(",").map(Number);
 
-function defaultCaption(d, zona) {
-  const a = d.agente || {};
-  const lines = [
-    `${d.titulo} | ${zona} 🌴`, "",
-    d.descripcion || "",
-    d.confotur ? "\n🏛 Proyecto clasificado CONFOTUR: beneficios fiscales para el comprador (consulta condiciones)." : "",
-    "",
-    ...[d.habitaciones && `🛏 ${d.habitaciones} habitaciones`, d.banos && `🛁 ${d.banos} baños`, d.m2_construidos && `📐 ${d.m2_construidos} m² construidos`, d.m2_terreno && `🌿 ${d.m2_terreno} m² de terreno`, d.parqueos && `🚗 ${d.parqueos} parqueos`].filter(Boolean),
-    ...(d.destacados || []).map((x) => `✔️ ${x}`),
-    "", `💰 ${d.precio || "Precio a consultar"}`, "",
-    `📲 Agenda tu visita: ${a.telefono || ""}${a.nombre ? " · " + a.nombre : ""}`,
-    `🔗 Ficha completa en el link de la bio`, "",
-    (d.hashtags || ["#KeymexCaribe", "#Keymex", "#RealEstate", "#BienesRaices", "#PuntaCana", "#RepublicaDominicana", ...(d.confotur ? ["#Confotur"] : []), "#CaribbeanLiving", "#LuxuryRealEstate", "#InversionInmobiliaria"]).join(" "),
-  ];
-  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+// ---------- datos ----------
+const raw = JSON.parse(fs.readFileSync(path.join(dir, "propiedad.json"), "utf8"));
+const d = {
+  operacion: "venta", moneda: "USD", segmento: "inversor", variante: "clara", ...raw,
+  m2_construccion: raw.m2_construccion ?? raw.m2_construidos, // compatibilidad con el formato anterior
+  tipo: (raw.tipo || "villa").toLowerCase(),
+  operacion: (raw.operacion || "venta").toLowerCase(),
+};
+if (/^rd/i.test(d.moneda)) d.moneda = "RD$";
+const officeFile = path.join(ROOT, "oficina.json");
+const office = fs.existsSync(officeFile) ? JSON.parse(fs.readFileSync(officeFile, "utf8")) : {};
+const chantal = ["CHANTAL.woff2", "CHANTAL.otf", "CHANTAL.ttf"].map((f) => path.join(ROOT, "assets", "fonts", f)).find((f) => fs.existsSync(f));
+if (chantal) office.chantal = `data:font/${path.extname(chantal).slice(1)};base64,${fs.readFileSync(chantal).toString("base64")}`;
+if (!ONLY_FRAME && (!d.agente?.nombre || !d.agente?.whatsapp)) die("Falta agente.nombre y agente.whatsapp en propiedad.json (se pide en cada pieza).");
+
+// ---------- medios ----------
+const videoPath = [raw.video, "video.mp4", "video.mov"].filter(Boolean).map((f) => path.join(dir, f)).find((f) => fs.existsSync(f)) || null;
+let fotos = (raw.fotos?.length ? raw.fotos : fs.existsSync(path.join(dir, "fotos")) ? fs.readdirSync(path.join(dir, "fotos")).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort().map((f) => "fotos/" + f) : []).map((f) => path.join(dir, f));
+if (!fotos.length && videoPath) {
+  const vd = dur(videoPath);
+  fotos = [0.15, 0.35, 0.55, 0.75, 0.9].map((r, i) => { const f = path.join(tmp, `frame-${i}.jpg`); ff(["-ss", (vd * r).toFixed(2), "-i", videoPath, "-frames:v", "1", "-q:v", "2", f]); return f; });
 }
+if (!fotos.length) die("No hay fotos ni video.");
+
+// ---------- lote: imagen fija para el revelado + polígono en coordenadas 9:16 ----------
+const isLote = d.tipo === "lote";
+let still = null;
+if (isLote) {
+  const L = (d.lote ||= {});
+  if (L.still) still = path.join(dir, L.still);
+  else if (videoPath) { still = path.join(out, "lote-fotograma.jpg"); ff(["-ss", String(L.t_freeze ?? Math.min(dur(videoPath) * 0.5, 6)), "-i", videoPath, "-frames:v", "1", "-q:v", "2", still]); }
+  else still = fotos[0];
+  // Polígono marcado en la portada 4:5 (app) → convertir a 9:16 sobre la misma foto
+  if (!L.poligono_reel?.length && L.poligono?.length >= 3 && still === fotos[0]) {
+    const [iw, ih] = dims(still);
+    const map = ([x, y], from, to) => {
+      const s1 = Math.max(from[0] / iw, from[1] / ih), vw1 = from[0] / s1, vh1 = from[1] / s1;
+      const ix = (iw - vw1) / 2 + x * vw1, iy = (ih - vh1) / 2 + y * vh1;
+      const s2 = Math.max(to[0] / iw, to[1] / ih), vw2 = to[0] / s2, vh2 = to[1] / s2;
+      return [+((ix - (iw - vw2) / 2) / vw2).toFixed(4), +((iy - (ih - vh2) / 2) / vh2).toFixed(4)];
+    };
+    L.poligono_reel = L.poligono.map((p) => map(p, [1080, 1350], [1080, 1920]));
+  }
+  if (ONLY_FRAME || !L.poligono_reel?.length) {
+    // Fotograma 9:16 con grilla al 10% para ubicar los vértices (x,y de 0 a 1)
+    const g = path.join(out, "marcar-poligono.jpg");
+    let vf = "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920";
+    for (let i = 1; i < 10; i++) vf += `,drawbox=x=${i * 108}:y=0:w=2:h=1920:color=white@0.6:t=fill,drawbox=x=0:y=${i * 192}:w=1080:h=2:color=white@0.6:t=fill`;
+    ff(["-i", still, "-vf", vf, "-frames:v", "1", "-q:v", "3", g]);
+    console.log(`→ ${g}\n  Marca lote.poligono_reel en propiedad.json como [[x,y],…] (0–1; cada línea de la grilla = 0.1).`);
+    if (ONLY_FRAME) process.exit(0);
+    console.warn("⚠ Lote sin polígono: el revelado saldrá sin trazado.");
+  }
+}
+
+// ---------- escenas del reel ----------
+const has = (v) => v != null && v !== "" && Number(String(v).replace(/[^\d.]/g, "")) > 0;
+const scenes = isLote
+  ? [["gancho", 2.8], ["revelado", 4.6], (d.lote.uso || has(d.lote.niveles) || has(d.habitaciones)) && ["infolote", 3.0], ["precio", 3.0], ["cierre", 3.4]]
+  : [["gancho", 3.0], (has(d.m2_solar) || has(d.m2_construccion) || has(d.habitaciones)) && ["medidas", 2.8],
+     ((d.amenidades || []).length || (d.destacados || []).length) && ["amenidades", 3.0], d.frase_script && ["frase", 2.6], ["precio", 3.0], ["cierre", 3.4]];
+const SCENES = scenes.filter(Boolean).map(([name, len]) => ({ name, len, anim: name === "revelado" ? 2.8 : name === "cierre" ? 1.4 : 1.0 }));
+
+// ---------- render con las plantillas de la app ----------
+const fileUrl = (f) => pathToFileURL(f).href;
+const pageData = { ...d, fotos: fotos.map(fileUrl) };
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+await page.addInitScript(() => { window.__KX_RENDER__ = true; });
+await page.goto(fileUrl(APP));
+await page.waitForFunction(() => typeof window.__kxSet === "function");
+async function shot(props, file, transparent = false) {
+  await page.evaluate((p) => window.__kxSet(p), props);
+  await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); });
+  if (props.kind !== "reel") await page.waitForTimeout(150); // fondos CSS
+  await (await page.$("#kx-render > .kx")).screenshot({ path: file, omitBackground: transparent });
+}
+
+// Carrusel + story (mismas plantillas que la app)
+const portadaKind = isLote ? "lote" : "ficha";
+await shot({ kind: portadaKind, d: pageData, office, fmt: "feed" }, path.join(out, "post-01-portada.png"));
+for (let i = 1; i < Math.min(fotos.length, 10); i++) await shot({ kind: "foto", src: fileUrl(fotos[i]), fmt: "feed" }, path.join(out, `post-${String(i + 1).padStart(2, "0")}-foto.png`));
+await shot({ kind: portadaKind, d: pageData, office, fmt: "story" }, path.join(out, "story-portada.png"));
+fs.copyFileSync(path.join(out, "story-portada.png"), path.join(out, "reel-portada.png"));
+const caption = raw.caption || (await page.evaluate(([dd, oo]) => window.__kxCaption(dd, oo), [pageData, office]));
+fs.writeFileSync(path.join(out, "caption.txt"), caption + "\n");
+console.log(`✓ Carrusel ${Math.min(fotos.length, 10)} slides + story + caption`);
+
+// Capas animadas del reel (PNG transparentes por fotograma)
+for (const s of SCENES) {
+  s.seq = path.join(tmp, s.name); fs.mkdirSync(s.seq);
+  const n = Math.round(s.anim * FPS);
+  for (let i = 0; i < n; i++) await shot({ kind: "reel", scene: s.name, d: pageData, office, p: i / (n - 1) }, path.join(s.seq, `${String(i).padStart(3, "0")}.png`), true);
+  s.frames = n;
+}
+await browser.close();
+console.log("✓ Capas animadas renderizadas");
+
+// ---------- fondos + composición ----------
+const COVER = "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1";
+const venc = ["-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p", "-r", String(FPS)];
+const vlen = videoPath ? dur(videoPath) : 0;
+let cursor = Math.min(0.5, vlen / 10), fotoIdx = 0;
+const clips = [];
+for (const [k, s] of SCENES.entries()) {
+  const L = s.len + (k < SCENES.length - 1 ? T : 0); // margen para el fundido
+  const frames = Math.round(L * FPS);
+  let bgIn, bgF;
+  if (s.name === "cierre") { bgIn = ["-f", "lavfi", "-i", `color=c=0x7A141C:s=1080x1920:r=${FPS}:d=${L}`]; bgF = "[0:v]setsar=1[bg]"; }
+  else if (s.name === "revelado") { bgIn = ["-loop", "1", "-t", L.toFixed(2), "-i", still]; bgF = `[0:v]${COVER},fps=${FPS}[bg]`; }
+  else if (videoPath) {
+    if (cursor + L > vlen) cursor = Math.max(0, (cursor + L) % Math.max(vlen - L, 0.01));
+    bgIn = ["-ss", cursor.toFixed(2), "-t", L.toFixed(2), "-i", videoPath]; cursor += s.len;
+    bgF = `[0:v]${COVER},fps=${FPS},tpad=stop_mode=clone:stop_duration=${L}[bg]`;
+  } else {
+    const foto = fotos[fotoIdx++ % fotos.length];
+    const zin = k % 2 === 0, z = zin ? `min(1+0.12*on/${frames},1.12)` : `max(1.12-0.12*on/${frames},1.0)`;
+    bgIn = ["-loop", "1", "-i", foto];
+    bgF = `[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840,zoompan=z='${z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1080x1920:fps=${FPS},setsar=1[bg]`;
+  }
+  const c = path.join(tmp, `c${k}.mp4`);
+  ff([...bgIn, "-framerate", String(FPS), "-i", path.join(s.seq, "%03d.png"), "-filter_complex",
+    `${bgF};[1:v]tpad=stop_mode=clone:stop_duration=${L}[ov];[bg][ov]overlay=0:0:shortest=0,trim=duration=${L.toFixed(3)},format=yuv420p[v]`,
+    "-map", "[v]", "-frames:v", String(frames), ...venc, c]);
+  clips.push(c);
+}
+
+let fc = "", last = "[0:v]", acc = dur(clips[0]);
+for (let i = 1; i < clips.length; i++) {
+  fc += `${last}[${i}:v]xfade=transition=fade:duration=${T}:offset=${(acc - T).toFixed(3)}[x${i}];`;
+  last = `[x${i}]`; acc += dur(clips[i]) - T;
+}
+const silent = path.join(tmp, "silent.mp4"), reel = path.join(out, "reel.mp4");
+ff([...clips.flatMap((c) => ["-i", c]), ...(fc ? ["-filter_complex", fc.replace(/;$/, ""), "-map", last] : []), "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", "-r", String(FPS), "-movflags", "+faststart", silent]);
+const musica = fs.existsSync(path.join(dir, "musica.mp3")) ? path.join(dir, "musica.mp3") : null;
+if (musica) ff(["-i", silent, "-i", musica, "-filter_complex", `[1:a]afade=t=in:d=0.5,afade=t=out:st=${(acc - 1.5).toFixed(2)}:d=1.5[a]`, "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", reel]);
+else if (videoPath && raw.reel_audio_original) ff(["-i", silent, "-i", videoPath, "-map", "0:v", "-map", "1:a?", "-c:v", "copy", "-c:a", "aac", "-shortest", reel]);
+else fs.renameSync(silent, reel);
+fs.rmSync(tmp, { recursive: true, force: true });
+console.log(`✓ Reel ${acc.toFixed(1)} s · ${SCENES.map((s) => s.name).join(" → ")} ${musica ? "· con música" : "· sin música (agregar audio en Instagram)"}`);
+console.log("Listo →", out);
