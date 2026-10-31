@@ -15,9 +15,7 @@ node generate.mjs propiedades/<carpeta>
 ```
 La carpeta lleva `propiedad.json` + `fotos/` y/o `video.mp4` (y opcional `musica.mp3`). Resultado en `propiedades/<carpeta>/salida/`.
 
-## Pendientes para dejarlo 100% de marca
-- Cargar el logo oficial en `assets/logo-keymex-blanco.png` y `assets/logo-keymex-rojo.png` (PNG transparente).
-- Datos reales de contacto (WhatsApp, Instagram) en cada `propiedad.json`.
+Logos oficiales (KEYMEX Caribe rojo/blanco y sello CONFOTUR) ya cargados en `assets/`. El WhatsApp del agente se pide en cada pieza.
 
 ---
 
