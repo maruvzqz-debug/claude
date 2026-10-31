@@ -10,6 +10,7 @@ Marca: aplicar siempre el skill `keymex-brand-guidelines` (Rojo #ad1d28, blanco,
 
 ## Flujo
 
+0. **Preguntar SIEMPRE, antes de generar, con qué agente va la pieza**: nombre y WhatsApp (el contenido puede ser para distintos agentes). No reutilizar el contacto de una propiedad anterior ni inventarlo. Si el usuario ya lo dio en el mismo pedido, no volver a preguntar. El Instagram por defecto es el de la oficina.
 1. **Crear carpeta** `keymex-caribe-social/propiedades/<slug>/` (slug: tipo-zona-corto, ej. `villa-cap-cana`).
 2. **Conseguir los datos**
    - *Link*: leer la página con WebFetch. Extraer: operación, tipo, título, zona, ciudad, precio + moneda, habitaciones, baños, m² construidos/terreno, parqueos, amenidades, descripción y URLs de fotos (buscar `og:image`, galerías, `<img>` grandes). Descargar 6–10 fotos a `fotos/01.jpg, 02.jpg…` ordenadas así: 01 fachada/vista hero, 02 living o vista, 03 vertical/interior, 04 detalle, 05 atardecer/amenidad lifestyle, 06 la mejor que quede.
