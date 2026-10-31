@@ -15,3 +15,5 @@ tsconfig.tsbuildinfo
 
 # KEYMEX social
 keymex-caribe-social/propiedades/*/salida/
+keymex-caribe-social/propiedades/*/salida-carrusel/
+keymex-caribe-social/propiedades/*/muestra-*.png
