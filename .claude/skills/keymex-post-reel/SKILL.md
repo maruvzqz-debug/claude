@@ -29,5 +29,6 @@ Marca: aplicar siempre el skill `keymex-brand-guidelines` (Rojo #ad1d28, blanco,
 `reel_seg_por_escena` (2.6), `reel_max_datos` (5), `reel_duracion` (24, modo video), `reel_audio_original` (true para conservar audio del video), `hashtags` (array), `cta_titulo`, `cta_texto`, `cta_reel`, `fotos` (orden explícito).
 Música: dejar `musica.mp3` con licencia en la carpeta; si no, recomendar agregar audio en tendencia desde la app de Instagram.
 
-## Logo
-Si existen `keymex-caribe-social/assets/logo-keymex-blanco.png` (y `logo-keymex-rojo.png`) se usan automáticamente. Si no, sale un wordmark tipográfico provisorio: avisarle al usuario que cargue el logo oficial.
+## Logos (en `keymex-caribe-social/assets/`)
+- `logo-keymex-rojo.png` / `logo-keymex-blanco.png`: logo oficial "KEYMEX · LE CENTRE IMMOBILIER CARIBE" (el blanco es el mismo archivo en blanco). Rojo sobre fondos claros, blanco sobre foto o rojo. Nunca deformar ni recolorear de otro modo.
+- `sello-confotur.png`: sello "Proyecto Turístico Clasificado por CONFOTUR". Poner `"confotur": true` **solo** si la publicación/desarrollador confirma la clasificación CONFOTUR (buscar "CONFOTUR", "Ley 158-01", "exento de IPI/transferencia" en la ficha). Si no está claro, preguntar al usuario. Con `true` el sello aparece en portada, ficha, gancho y precio del reel, y la caption suma la línea de beneficios fiscales + #Confotur.

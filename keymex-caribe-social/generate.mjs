@@ -50,7 +50,7 @@ const logo = (n) => { const p = path.join(ROOT, "assets", n); return fs.existsSy
 const pageData = {
   ...data,
   fotos: fotos.map((f) => pathToFileURL(f).href),
-  __logos: { blanco: logo("logo-keymex-blanco.png"), rojo: logo("logo-keymex-rojo.png") },
+  __logos: { blanco: logo("logo-keymex-blanco.png"), rojo: logo("logo-keymex-rojo.png"), confotur: logo("sello-confotur.png") },
 };
 
 // ---------- Escenas del reel ----------
@@ -173,13 +173,14 @@ function defaultCaption(d, zona) {
   const lines = [
     `${d.titulo} | ${zona} 🌴`, "",
     d.descripcion || "",
+    d.confotur ? "\n🏛 Proyecto clasificado CONFOTUR: beneficios fiscales para el comprador (consulta condiciones)." : "",
     "",
     ...[d.habitaciones && `🛏 ${d.habitaciones} habitaciones`, d.banos && `🛁 ${d.banos} baños`, d.m2_construidos && `📐 ${d.m2_construidos} m² construidos`, d.m2_terreno && `🌿 ${d.m2_terreno} m² de terreno`, d.parqueos && `🚗 ${d.parqueos} parqueos`].filter(Boolean),
     ...(d.destacados || []).map((x) => `✔️ ${x}`),
     "", `💰 ${d.precio || "Precio a consultar"}`, "",
     `📲 Agenda tu visita: ${a.telefono || ""}${a.nombre ? " · " + a.nombre : ""}`,
     `🔗 Ficha completa en el link de la bio`, "",
-    (d.hashtags || ["#KeymexCaribe", "#Keymex", "#RealEstate", "#BienesRaices", "#PuntaCana", "#RepublicaDominicana", "#CaribbeanLiving", "#LuxuryRealEstate", "#InversionInmobiliaria"]).join(" "),
+    (d.hashtags || ["#KeymexCaribe", "#Keymex", "#RealEstate", "#BienesRaices", "#PuntaCana", "#RepublicaDominicana", ...(d.confotur ? ["#Confotur"] : []), "#CaribbeanLiving", "#LuxuryRealEstate", "#InversionInmobiliaria"]).join(" "),
   ];
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }

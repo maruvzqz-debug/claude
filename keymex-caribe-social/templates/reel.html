@@ -7,6 +7,9 @@
   /* Zonas seguras de Reels: texto entre y=220 y y=1500, margen derecho 140px (botones de IG) */
   .scene { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: transparent; }
   .scene .corner { position: absolute; top: 110px; left: 72px; font-size: 40px; }
+  .scene .corner .logo-img { height: 42px; }
+  .end .logo-img { height: 100px; margin-bottom: 90px; }
+  .scene .confotur { position: absolute; top: 96px; right: 150px; width: 170px; }
   .scene .shade-b { position: absolute; left:0; right:0; bottom:0; height: 1100px; background: linear-gradient(to top, rgba(0,0,0,.7), rgba(0,0,0,0)); }
   .scene .shade-t { position: absolute; left:0; right:0; top:0; height: 420px; background: linear-gradient(to bottom, rgba(0,0,0,.45), rgba(0,0,0,0)); }
 
@@ -48,7 +51,7 @@
   const html = d.__scenes.map((s) => {
     if (s.type === "hook") return `
       <section class="scene hook"><div class="shade-t"></div><div class="shade-b"></div>
-        <div class="corner">${logoHTML("blanco")}</div>
+        <div class="corner">${logoHTML("blanco")}</div>${confoturHTML()}
         <div class="box"><span class="tag">${esc(s.tag)}</span><h1>${esc(s.text)}</h1><div class="zona caps">${esc(s.sub)}</div></div>
       </section>`;
     if (s.type === "fact") return `
@@ -58,7 +61,7 @@
       </section>`;
     if (s.type === "price") return `
       <section class="scene price"><div class="shade-t"></div><div class="shade-b"></div>
-        <div class="corner">${logoHTML("blanco")}</div>
+        <div class="corner">${logoHTML("blanco")}</div>${confoturHTML()}
         <div class="box"><div class="zona caps">${esc(s.sub)}</div><div class="p">${esc(s.text)}</div><div class="s">${esc(s.extra || "")}</div></div>
       </section>`;
     if (s.type === "end") return `

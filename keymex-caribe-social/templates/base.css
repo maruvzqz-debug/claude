@@ -29,6 +29,8 @@ body { font-family: "Montserrat", sans-serif; color: var(--negro); -webkit-font-
 .logo img { display: block; height: 100%; width: auto; }
 .logo .wm { font-weight: 800; letter-spacing: 0.06em; }
 .logo .sub { font-weight: 500; letter-spacing: 0.32em; margin-top: 0.35em; font-size: 0.26em; }
+.logo-img { display: block; width: auto; }
+.confotur { display: block; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.9); }
 .logo.blanco { color: var(--blanco); }
 .logo.rojo { color: var(--rojo); }
 

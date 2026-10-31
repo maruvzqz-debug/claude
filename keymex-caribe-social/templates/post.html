@@ -10,6 +10,11 @@
   /* 1 · PORTADA */
   .s-cover .tag { position: absolute; top: 72px; left: 72px; font-size: 24px; padding: 14px 26px; }
   .s-cover .top-logo { position: absolute; top: 64px; right: 72px; font-size: 44px; height: 70px; }
+  .s-cover .top-logo .logo-img { height: 48px; }
+  .s-cover .confotur { position: absolute; top: 150px; right: 72px; width: 170px; }
+  .s-specs .confotur { position: absolute; top: 64px; left: 72px; width: 150px; }
+  .s-specs .panel .logo-img { position: absolute; right: 72px; top: 70px; height: 34px; }
+  .s-cta .contact .logo-img { height: 62px; }
   .s-cover .bottom { bottom: 78px; color: var(--blanco); }
   .s-cover .zona { font-size: 26px; font-weight: 500; margin-bottom: 22px; display:flex; align-items:center; gap:14px; }
   .s-cover .zona::before { content:""; width: 48px; height: 3px; background: var(--rojo); display:inline-block; }
@@ -82,6 +87,7 @@
     <div class="shade-top"></div><div class="shade-bottom"></div>
     <span class="tag">${esc(d.etiqueta || "En " + op.toLowerCase())}</span>
     <div class="top-logo">${logoHTML("blanco")}</div>
+    ${confoturHTML()}
     <div class="pad bottom">
       <div class="zona caps">${esc(zonaTxt)}</div>
       <h1>${esc(d.titulo)}</h1>
@@ -98,7 +104,9 @@
   <section class="slide s-specs">
     <div class="photo" style="${bg(pick(1))}"></div>
     <div class="badge"><span class="tag">${esc(d.tipo || "Propiedad")}</span></div>
+    ${confoturHTML()}
     <div class="panel">
+      ${d.__logos && d.__logos.rojo ? logoHTML("rojo") : ""}
       <div class="kicker caps">Ficha de la propiedad</div>
       <h2>${esc(d.subtitulo || d.titulo)}</h2>
       <div class="grid">${cells.map(c => `

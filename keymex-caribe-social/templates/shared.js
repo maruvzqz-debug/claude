@@ -7,8 +7,15 @@ function esc(s) {
 function logoHTML(variant) {
   const d = window.__DATA__ || {};
   const file = d.__logos && d.__logos[variant];
-  if (file) return `<span class="logo ${variant}"><img src="${file}" alt="KEYMEX"></span>`;
+  if (file) return `<img class="logo-img ${variant}" src="${file}" alt="KEYMEX Le Centre Immobilier Caribe">`;
   return `<span class="logo ${variant}"><span class="wm">KEYMEX</span><span class="sub">LE CENTRE IMMOBILIER</span></span>`;
+}
+
+// Sello CONFOTUR: SOLO si la propiedad tiene la clasificación ("confotur": true en el JSON).
+function confoturHTML(cls) {
+  const d = window.__DATA__ || {};
+  if (!d.confotur || !d.__logos || !d.__logos.confotur) return "";
+  return `<img class="confotur ${cls || ""}" src="${d.__logos.confotur}" alt="Proyecto clasificado CONFOTUR">`;
 }
 
 const ICONS = {

@@ -14,12 +14,22 @@
   "m2_construidos": 450,
   "m2_terreno": 900,
   "parqueos": 2,
-  "destacados": ["Vista directa al mar", "Piscina infinita", "Acceso privado a la playa", "Terraza con BBQ", "Entrega amueblada"],
+  "destacados": [
+    "Vista directa al mar",
+    "Piscina infinita",
+    "Acceso privado a la playa",
+    "Terraza con BBQ",
+    "Entrega amueblada"
+  ],
   "frase_lifestyle": "Despierta cada mañana con el Caribe a tus pies.",
   "descripcion": "Una villa pensada para vivir el Caribe sin filtros: espacios abiertos, luz natural todo el día y una piscina infinita que se funde con el horizonte.",
   "hook_reel": "¿Te imaginas vivir aquí?",
   "cta_titulo": "Agenda tu visita privada",
   "cta_texto": "Escríbenos por WhatsApp y recibe la ficha completa.",
-  "agente": { "nombre": "KEYMEX Caribe", "telefono": "+1 809 000 0000" },
-  "instagram": "@keymexcaribe"
+  "agente": {
+    "nombre": "KEYMEX Caribe",
+    "telefono": "+1 809 000 0000"
+  },
+  "instagram": "@keymexcaribe",
+  "confotur": true
 }
