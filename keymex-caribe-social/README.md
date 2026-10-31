@@ -18,3 +18,17 @@ La carpeta lleva `propiedad.json` + `fotos/` y/o `video.mp4` (y opcional `musica
 ## Pendientes para dejarlo 100% de marca
 - Cargar el logo oficial en `assets/logo-keymex-blanco.png` y `assets/logo-keymex-rojo.png` (PNG transparente).
 - Datos reales de contacto (WhatsApp, Instagram) en cada `propiedad.json`.
+
+---
+
+# KEYMEX Caribe Studio (app web)
+
+Carpeta `app/` · React + Vite. Plantillas: Ficha (clara/oscura) · Lote con drone (editor de polígono) · Hook · Educativo (3–6 pasos) · Prueba social (collage 3–5) · Slide foto · Story 9:16 de cualquiera · Portadas de destacadas.
+Incluye caption automática (según segmento: inversor / familia / inversor AR-CL-PY), selector US$/RD$, sello CONFOTUR opcional, validaciones (precio, 1 palabra acento, contacto del agente, contraste AA) y carga masiva por CSV → ZIP.
+
+```bash
+cd app && npm install
+npm run dev     # editar y probar en http://localhost:5173
+npm run build   # genera dist/index.html (un solo archivo autocontenido)
+```
+CHANTAL: se carga desde la pestaña "Oficina y marca" (archivo .otf/.ttf/.woff2). Hasta entonces se usa una script provisoria.

@@ -1,0 +1,155 @@
+/* ============ KEYMEX Caribe · Plantillas (a tamaño real) ============ */
+@font-face { font-family: "Montserrat"; font-weight: 300; src: url("../assets/fonts/montserrat-latin-300-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 300; font-style: italic; src: url("../assets/fonts/montserrat-latin-300-italic.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 400; src: url("../assets/fonts/montserrat-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 500; src: url("../assets/fonts/montserrat-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 600; src: url("../assets/fonts/montserrat-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 700; src: url("../assets/fonts/montserrat-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 800; src: url("../assets/fonts/montserrat-latin-800-normal.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-weight: 900; src: url("../assets/fonts/montserrat-latin-900-normal.woff2") format("woff2"); }
+@font-face { font-family: "Poppins"; font-weight: 400; src: url("../assets/fonts/poppins-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Poppins"; font-weight: 500; src: url("../assets/fonts/poppins-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Poppins"; font-weight: 600; src: url("../assets/fonts/poppins-latin-600-normal.woff2") format("woff2"); }
+/* CHANTAL se carga desde la app (botón "Cargar CHANTAL"). Mientras tanto, script provisoria. */
+@font-face { font-family: "KX Script Provisoria"; font-weight: 400; src: url("../assets/fonts/script-provisoria.woff2") format("woff2"); }
+
+.kx {
+  --kx-red: #AD1D28; --kx-red-dark: #7A141C; --kx-gold: #C9A24A;
+  --kx-cream: #F6F1E7; --kx-ink: #1E1E1E; --kx-white: #FFFFFF;
+  --font-head: "Montserrat", sans-serif; --font-body: "Poppins", sans-serif;
+  --font-script: "CHANTAL", "KX Script Provisoria", cursive;
+  position: relative; overflow: hidden; background: var(--kx-cream);
+  font-family: var(--font-body); color: var(--kx-ink);
+  -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision;
+}
+.kx * { box-sizing: border-box; margin: 0; padding: 0; }
+.kx .ph { position: absolute; inset: 0; background-size: cover; background-position: center; background-color: #c9d6dc; }
+.kx .ph-empty { display: flex; align-items: center; justify-content: center; font: 600 28px var(--font-head); color: rgba(0,0,0,.35); letter-spacing: .1em; }
+.kx .script { font-family: var(--font-script); font-weight: 400; }
+.kx .acento { color: var(--kx-gold); }
+.kx .caps { text-transform: uppercase; letter-spacing: .24em; }
+.kx .logo { display: block; width: auto; }
+.kx .confotur { display: block; border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px #fff, 0 10px 30px rgba(0,0,0,.18); }
+.kx .icon { display: block; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- Barra superior común ---------- */
+.kx .top { position: absolute; left: 64px; right: 64px; top: 56px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 3; }
+.kx .tagline { font: 700 19px var(--font-head); letter-spacing: .26em; text-transform: uppercase; color: var(--kx-red); text-align: right; padding-top: 10px; }
+.kx .tagline.on-dark { color: var(--kx-white); }
+.kx .top .right { display: flex; flex-direction: column; align-items: flex-end; gap: 22px; }
+
+/* ---------- Footer común ---------- */
+.kx .footer {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 112px; z-index: 4;
+  background: var(--kx-red-dark); color: var(--kx-white);
+  display: flex; align-items: center; gap: 30px; padding: 0 56px;
+  border-top: 4px solid var(--kx-gold); /* filete dorado (Latitud Áurea) */
+}
+.kx .footer .logo { height: 40px; }
+.kx .footer .items { display: flex; gap: 26px; flex: 1; justify-content: center; flex-wrap: nowrap; }
+.kx .footer .it { display: flex; align-items: center; gap: 9px; font: 500 20px var(--font-body); white-space: nowrap; }
+.kx .footer .it .icon { width: 24px; height: 24px; color: var(--kx-gold); }
+.kx .footer .lat { font: 600 15px var(--font-head); letter-spacing: .22em; color: var(--kx-gold); white-space: nowrap; }
+
+/* ================= 1 · FICHA DE PROPIEDAD ================= */
+.kx.ficha .shade-light { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(255,255,255,.96) 0%, rgba(255,255,255,.9) 24%, rgba(255,255,255,.0) 46%); z-index: 1; }
+.kx.ficha .shade-low { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.45) 0%, rgba(0,0,0,0) 40%); z-index: 1; }
+.kx.ficha.oscura .shade-dark { position: absolute; inset: 0; background: rgba(0,0,0,.56); z-index: 1; }
+.kx.ficha .head { position: absolute; left: 64px; right: 64px; top: 160px; z-index: 3; }
+.kx.ficha h1 { font: 900 98px/0.98 var(--font-head); color: var(--kx-red); letter-spacing: -0.015em; max-width: 770px; }
+.kx.ficha.oscura h1 { color: var(--kx-white); }
+.kx.ficha .loc { display: flex; align-items: center; gap: 10px; margin-top: 20px; font: 600 27px var(--font-body); color: var(--kx-ink); }
+.kx.ficha .loc .icon { width: 30px; height: 30px; color: var(--kx-gold); stroke-width: 2.6; }
+.kx.ficha.oscura .loc { color: var(--kx-white); }
+.kx.ficha .bajada { margin-top: 14px; font: 400 25px/1.35 var(--font-body); color: #3a3a3a; max-width: 720px; }
+.kx.ficha.oscura .bajada { color: rgba(255,255,255,.9); }
+.kx.ficha .frase { position: absolute; right: 64px; z-index: 3; color: var(--kx-white); font-size: 72px; line-height: 1.05; text-align: right; max-width: 620px; text-shadow: 0 3px 24px rgba(0,0,0,.45); }
+.kx.ficha .bottom { position: absolute; left: 64px; right: 64px; bottom: 148px; z-index: 3; display: flex; flex-direction: column; gap: 14px; }
+.kx.ficha .row2 { display: flex; gap: 14px; align-items: stretch; }
+.kx.ficha .row2 .amen { flex: 1; min-width: 0; }
+.kx.ficha .price { display: flex; flex-direction: column; justify-content: center; }
+.kx.ficha .cards { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.kx.ficha .card { background: var(--kx-cream); border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+.kx.ficha.oscura .card { background: rgba(246,241,231,.94); }
+.kx.ficha .dims { display: flex; }
+.kx.ficha .dims > div { flex: 1; min-width: 0; padding: 18px 26px; border-right: 1px solid rgba(0,0,0,.12); }
+.kx.ficha .dims > div:last-child { border-right: 0; }
+.kx.ficha .dims b { display: block; white-space: nowrap; font: 800 40px var(--font-head); color: var(--kx-ink); line-height: 1; }
+.kx.ficha .dims b sup { font-size: 18px; }
+.kx.ficha .dims span { display: block; margin-top: 6px; font: 600 14px var(--font-head); letter-spacing: .16em; text-transform: uppercase; color: #6b6259; }
+.kx.ficha .amen { display: flex; justify-content: space-around; padding: 16px 18px; }
+.kx.ficha .amen > div { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--kx-red); min-width: 0; flex: 1; text-align: center; }
+.kx.ficha .amen .icon { width: 42px; height: 42px; }
+.kx.ficha .amen span { font: 600 13px var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--kx-ink); }
+.kx.ficha .price { flex: none; background: var(--kx-red); color: var(--kx-white); border-radius: 22px; padding: 22px 28px; box-shadow: 0 10px 30px rgba(0,0,0,.22); }
+.kx.ficha.oscura .price { background: rgba(122,20,28,.82); border: 2px solid rgba(255,255,255,.35); }
+.kx.ficha .price small { display: block; font: 700 16px var(--font-head); letter-spacing: .22em; text-transform: uppercase; opacity: .9; }
+.kx.ficha .price b { display: block; font: 900 50px var(--font-head); margin-top: 8px; line-height: 1; white-space: nowrap; }
+.kx.ficha .price em { display: block; font: 400 16px var(--font-body); font-style: normal; opacity: .85; margin-top: 6px; }
+
+/* ================= 2 · LOTE CON DRONE ================= */
+.kx.lote .shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,.6) 0%, rgba(0,0,0,0) 34%), linear-gradient(to top, rgba(0,0,0,.45) 0%, rgba(0,0,0,0) 30%); z-index: 1; }
+.kx.lote .head { position: absolute; left: 64px; top: 150px; z-index: 3; color: var(--kx-white); }
+.kx.lote .head .res { font: 700 22px var(--font-head); letter-spacing: .4em; }
+.kx.lote .head h1 { font: 900 84px/1 var(--font-head); margin-top: 8px; letter-spacing: -0.01em; max-width: 760px; }
+.kx.lote .ribbon { display: inline-block; margin-top: 18px; background: var(--kx-red); color: #fff; font: 800 24px var(--font-head); letter-spacing: .2em; padding: 12px 26px; }
+.kx.lote .pill-price { position: absolute; right: 64px; top: 160px; z-index: 3; background: var(--kx-gold); color: var(--kx-ink); border-radius: 999px; padding: 16px 30px; text-align: center; }
+.kx.lote .pill-price small { display: block; font: 700 14px var(--font-head); letter-spacing: .2em; text-transform: uppercase; }
+.kx.lote .pill-price b { display: block; font: 900 40px var(--font-head); line-height: 1.05; white-space: nowrap; }
+.kx.lote svg.poly { position: absolute; inset: 0; z-index: 2; }
+.kx.lote .m2pill { position: absolute; z-index: 3; transform: translate(-50%, -50%); background: var(--kx-gold); color: var(--kx-ink); font: 800 30px var(--font-head); padding: 10px 22px; border-radius: 999px; white-space: nowrap; box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+.kx.lote .medida { position: absolute; z-index: 3; transform: translate(-50%, -50%); color: #fff; font: 700 21px var(--font-head); text-shadow: 0 2px 8px rgba(0,0,0,.85); white-space: nowrap; }
+.kx.lote .info { position: absolute; left: 64px; right: 64px; bottom: 148px; z-index: 3; display: flex; background: var(--kx-cream); border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.2); }
+.kx.lote .info > div { flex: 1; display: flex; align-items: center; gap: 16px; padding: 22px 26px; border-right: 1px solid rgba(0,0,0,.12); color: var(--kx-red); }
+.kx.lote .info > div:last-child { border-right: 0; }
+.kx.lote .info .icon { width: 46px; height: 46px; flex: none; }
+.kx.lote .info b { display: block; font: 800 24px/1.1 var(--font-head); color: var(--kx-ink); }
+.kx.lote .info span { display: block; font: 600 13px var(--font-head); letter-spacing: .16em; text-transform: uppercase; color: #6b6259; margin-top: 4px; }
+
+/* ================= 3 · HOOK / LIFESTYLE ================= */
+.kx.hook .shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, rgba(0,0,0,.15) 45%, rgba(0,0,0,.6) 100%); z-index: 1; }
+.kx.hook .q { position: absolute; left: 64px; right: 64px; top: 210px; z-index: 3; color: #fff; }
+.kx.hook .q h1 { font: 900 92px/1.02 var(--font-head); letter-spacing: -0.015em; text-shadow: 0 4px 30px rgba(0,0,0,.3); }
+.kx.hook .q h1 .script { color: var(--kx-gold); font-size: 1.12em; letter-spacing: 0; font-weight: 400; }
+.kx.hook .q p { margin-top: 30px; font: 700 22px var(--font-head); letter-spacing: .26em; text-transform: uppercase; }
+.kx.hook .vals { position: absolute; left: 64px; right: 64px; z-index: 3; display: flex; justify-content: space-between; color: #fff; }
+.kx.hook .vals > div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; border-right: 1px solid rgba(255,255,255,.4); }
+.kx.hook .vals > div:last-child { border-right: 0; }
+.kx.hook .vals .icon { width: 56px; height: 56px; color: var(--kx-gold); }
+.kx.hook .vals span { font: 700 20px var(--font-head); letter-spacing: .24em; }
+
+/* ================= 4 · EDUCATIVO / PASOS ================= */
+.kx.pasos .shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(255,255,255,.95) 0%, rgba(255,255,255,.86) 55%, rgba(255,255,255,.55) 100%); z-index: 1; }
+.kx.pasos .head { position: absolute; left: 64px; right: 64px; top: 170px; z-index: 3; text-align: center; }
+.kx.pasos h1 { font: 900 80px/1.02 var(--font-head); color: var(--kx-ink); }
+.kx.pasos h1 b { color: var(--kx-red); }
+.kx.pasos .ribbon { display: inline-block; margin-top: 18px; background: var(--kx-red); color: #fff; font: 800 34px var(--font-head); letter-spacing: .06em; padding: 12px 34px; border-radius: 6px; }
+.kx.pasos .grid { position: absolute; left: 56px; right: 56px; z-index: 3; display: grid; gap: 30px 24px; }
+.kx.pasos .step { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.kx.pasos .circ { position: relative; width: 150px; height: 150px; border-radius: 50%; background: var(--kx-red); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px rgba(173,29,40,.3); }
+.kx.pasos .circ .icon { width: 66px; height: 66px; }
+.kx.pasos .num { position: absolute; top: -6px; right: -6px; width: 54px; height: 54px; border-radius: 50%; background: var(--kx-gold); color: var(--kx-ink); font: 900 28px var(--font-head); display: flex; align-items: center; justify-content: center; border: 4px solid #fff; }
+.kx.pasos .step p { margin-top: 18px; font: 600 23px/1.25 var(--font-body); color: var(--kx-ink); max-width: 290px; }
+.kx.pasos .cierre { position: absolute; left: 0; right: 0; z-index: 3; text-align: center; color: var(--kx-red); font-size: 74px; }
+
+/* ================= 5 · PRUEBA SOCIAL ================= */
+.kx.social { background: var(--kx-red-dark); }
+.kx.social .collage { position: absolute; left: 40px; right: 40px; top: 40px; display: grid; gap: 10px; z-index: 1; }
+.kx.social .collage > div { position: relative; overflow: hidden; outline: 4px solid #fff; outline-offset: -4px; }
+.kx.social .sticker { position: absolute; left: 50%; transform: translateX(-50%); z-index: 3; background: var(--kx-cream); border-radius: 26px; padding: 26px 54px 30px; text-align: center; box-shadow: 0 16px 40px rgba(0,0,0,.35); white-space: nowrap; }
+.kx.social .sticker .script { color: var(--kx-gold); font-size: 64px; line-height: 1; display: block; }
+.kx.social .sticker b { display: block; font: 900 74px/1 var(--font-head); color: var(--kx-red); margin-top: 4px; }
+.kx.social .sticker .pill { display: inline-block; margin-top: 16px; background: var(--kx-red); color: #fff; font: 800 22px var(--font-head); letter-spacing: .3em; padding: 10px 24px; border-radius: 999px; }
+.kx.social .sub { position: absolute; left: 64px; right: 64px; z-index: 3; text-align: center; color: #fff; font: 500 26px/1.35 var(--font-body); }
+
+/* ================= 6 · SLIDE FOTO ================= */
+.kx.foto .shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 22%); z-index: 1; }
+.kx.foto .logo { position: absolute; top: 52px; right: 56px; height: 38px; z-index: 2; }
+.kx.foto .cap { position: absolute; left: 56px; bottom: 56px; z-index: 2; background: rgba(122,20,28,.88); color: #fff; font: 600 22px var(--font-body); padding: 10px 20px; border-radius: 8px; }
+
+/* ================= 8 · DESTACADAS ================= */
+.kx.dest { background: var(--kx-red); display: flex; align-items: center; justify-content: center; }
+.kx.dest .ring { position: absolute; inset: 70px; border-radius: 50%; border: 22px solid var(--kx-cream); }
+.kx.dest .in { position: relative; display: flex; flex-direction: column; align-items: center; gap: 26px; color: #fff; }
+.kx.dest .in .icon { width: 300px; height: 300px; stroke-width: 1.6; }
+.kx.dest .in span { font: 800 64px var(--font-head); letter-spacing: .14em; text-transform: uppercase; text-align: center; max-width: 640px; line-height: 1.05; }
